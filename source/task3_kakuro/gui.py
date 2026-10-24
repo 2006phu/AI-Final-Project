@@ -1,6 +1,15 @@
 import os
 import sys
 import pygame
+
+# Bat High-DPI Awareness tren Windows
+if sys.platform == "win32":
+    try:
+        import ctypes
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
 from task3_kakuro.csp import KakuroCSP
 from task3_kakuro.propagation import ConstraintPropagator
 from task3_kakuro.puzzle import KakuroPuzzle, CellType
@@ -31,34 +40,45 @@ CONFIG_OPTIONS = [
 class KakuroGUI:
     """Giao dien do hoa Pygame truc quan hoa tung buoc giai Kakuro (CSP).
     
+    Thiet ke hien dai, tinh te theo ngon ngu giao dien Zen Slate cua toan bo do an.
     100% thao tac bang chuot tren man hinh: Chon de, chon thuat toan, Play, Step, Reset, Chinh toc do.
     """
 
-    PANEL_WIDTH = 380
-    FPS_DEFAULT = 5
+    PANEL_WIDTH = 440
+    FPS_DEFAULT = 6
 
-    # Bang mau arcade sang trong
-    COLOR_BG = (22, 24, 28)
-    COLOR_GRID_LINE = (55, 60, 72)
-    COLOR_PANEL_BG = (30, 33, 40)
-    COLOR_PANEL_HEADER = (42, 46, 56)
-    COLOR_TEXT = (235, 238, 245)
-    COLOR_TEXT_MUTED = (150, 155, 168)
+    # Bang mau Slate-Modern cao cap
+    COLOR_BG = (14, 16, 22)
+    COLOR_BOARD_BG = (20, 24, 34)
+    COLOR_GRID_LINE = (38, 44, 58)
+    COLOR_PANEL_BG = (18, 22, 30)
+    COLOR_CARD_BG = (24, 29, 40)
+    COLOR_CARD_BORDER = (42, 50, 68)
+    COLOR_BORDER = (48, 58, 80)
+    COLOR_TEXT = (245, 248, 255)
+    COLOR_TEXT_MUTED = (165, 175, 195)
 
-    COLOR_BLACK_CELL = (35, 38, 46)
-    COLOR_CLUE_LINE = (75, 82, 98)
-    COLOR_CLUE_TEXT = (241, 196, 15)  # Vang gold sang trong
-    COLOR_WHITE_CELL = (248, 249, 252)
-    COLOR_ASSIGNED_TEXT = (25, 30, 42)
+    # Mau sac o ban co
+    COLOR_BLACK_CELL = (24, 28, 38)
+    COLOR_BLACK_INNER = (32, 38, 52)
+    COLOR_CLUE_SLASH = (70, 84, 110)
+    COLOR_CLUE_DOWN = (56, 189, 248)    # Xanh Cyan (Down Clue)
+    COLOR_CLUE_ACROSS = (251, 191, 36)  # Vang Gold (Across Clue)
+    COLOR_WHITE_CELL = (255, 255, 255)
+    COLOR_WHITE_BORDER = (215, 225, 240)
+    COLOR_ASSIGNED_TEXT = (15, 23, 42)
 
-    # Mau hieu ung trang thai thuat toan
-    COLOR_HIGHLIGHT_ASSIGN = (46, 204, 113)    # Xanh la: vua gan gia tri
-    COLOR_HIGHLIGHT_BACKTRACK = (230, 126, 34) # Cam: quay lui hoan tac
-    COLOR_PRUNED_TEXT = (231, 76, 60)          # Do: gia tri vua bi cat tia
-    COLOR_SOLVED_BORDER = (46, 204, 113)
+    # Mau sac hieu ung trang thai thuat toan
+    COLOR_HIGHLIGHT_ASSIGN = (16, 185, 129)     # Xanh ngoc: vua gan gia tri
+    COLOR_BG_ASSIGN = (220, 252, 231)
+    COLOR_HIGHLIGHT_BACKTRACK = (249, 115, 22)  # Cam: quay lui hoan tac
+    COLOR_BG_BACKTRACK = (254, 243, 199)
+    COLOR_PRUNED_TEXT = (239, 68, 68)           # Do: gia tri bi cat tia
+    COLOR_SOLVED_BG = (236, 253, 245)
+    COLOR_SOLVED_BORDER = (16, 185, 129)
 
-    COLOR_BTN_NORMAL = (48, 54, 66)
-    COLOR_BTN_HOVER = (68, 76, 92)
+    COLOR_BTN_NORMAL = (35, 42, 58)
+    COLOR_BTN_HOVER = (50, 60, 82)
 
     def __init__(self, puzzles_dir: str, initial_puzzle_path: str | None = None):
         pygame.init()
@@ -80,12 +100,15 @@ class KakuroGUI:
         self.current_config_idx = 0
 
         # Khoi tao font chu
-        self.font_main = pygame.font.SysFont("consolas", 26, bold=True)
-        self.font_clue = pygame.font.SysFont("consolas", 13, bold=True)
-        self.font_pencil = pygame.font.SysFont("consolas", 11)
-        self.font_panel = pygame.font.SysFont("consolas", 13)
-        self.font_panel_bold = pygame.font.SysFont("consolas", 14, bold=True)
-        self.font_title = pygame.font.SysFont("consolas", 17, bold=True)
+        font_family = "segoeui,tahoma,arial,consolas"
+        self.font_main = pygame.font.SysFont(font_family, 26, bold=True)
+        self.font_clue = pygame.font.SysFont(font_family, 13, bold=True)
+        self.font_pencil = pygame.font.SysFont(font_family, 10, bold=True)
+        self.font_panel = pygame.font.SysFont(font_family, 12)
+        self.font_panel_bold = pygame.font.SysFont(font_family, 13, bold=True)
+        self.font_title = pygame.font.SysFont(font_family, 17, bold=True)
+        self.font_subtitle = pygame.font.SysFont(font_family, 11)
+        self.font_tag = pygame.font.SysFont(font_family, 10, bold=True)
 
         self.clock = pygame.time.Clock()
         self.fps = self.FPS_DEFAULT
@@ -104,16 +127,23 @@ class KakuroGUI:
         # Chon kich thuoc o phu hop voi kich thuoc ma tran
         max_dim = max(self.puzzle.rows, self.puzzle.cols)
         if max_dim <= 5:
-            self.cell_size = 80
+            self.cell_size = 84
         elif max_dim <= 7:
-            self.cell_size = 70
+            self.cell_size = 72
         else:
-            self.cell_size = 58
+            self.cell_size = 60
 
-        self.grid_width = self.puzzle.cols * self.cell_size
-        self.grid_height = self.puzzle.rows * self.cell_size
-        self.window_width = self.grid_width + self.PANEL_WIDTH
-        self.window_height = max(self.grid_height, 620)
+        self.board_w = self.puzzle.cols * self.cell_size
+        self.board_h = self.puzzle.rows * self.cell_size
+
+        # Khu vuc choi rong hon de co padding dep mat
+        self.play_area_w = max(self.board_w + 48, 480)
+        self.window_width = self.play_area_w + self.PANEL_WIDTH
+        self.window_height = max(self.board_h + 60, 720)
+
+        # Toa do dat ban co trung tam trong khu vuc choi
+        self.board_offset_x = (self.play_area_w - self.board_w) // 2
+        self.board_offset_y = (self.window_height - self.board_h) // 2
 
         self.screen = pygame.display.set_mode((self.window_width, self.window_height))
         pygame.display.set_caption("Kakuro CSP Visualizer - Constraint Propagation (AI Final Project)")
@@ -189,7 +219,7 @@ class KakuroGUI:
             self.is_paused = True
             self.add_log("Qua trinh giai hoan tat!")
 
-    def run(self):
+    def run(self) -> str:
         while self.is_running:
             self._handle_events()
             if not self.is_paused and not self.is_solved:
@@ -197,7 +227,7 @@ class KakuroGUI:
             self._render()
             self.clock.tick(self.fps if not self.is_paused else 30)
 
-        pygame.quit()
+        return "menu"
 
     def _handle_events(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -213,7 +243,9 @@ class KakuroGUI:
                         break
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_ESCAPE:
+                    self.is_running = False
+                elif event.key == pygame.K_SPACE:
                     self.is_paused = not self.is_paused
                     self.add_log("PLAY" if not self.is_paused else "PAUSE")
                 elif event.key == pygame.K_s:
@@ -227,7 +259,10 @@ class KakuroGUI:
                     self.fps = max(1, self.fps - 2)
 
     def _handle_button_click(self, btn_id: str):
-        if btn_id == "play_pause":
+        if btn_id == "menu":
+            self.is_running = False
+
+        elif btn_id == "play_pause":
             self.is_paused = not self.is_paused
             self.add_log("PLAY" if not self.is_paused else "PAUSE")
 
@@ -262,14 +297,25 @@ class KakuroGUI:
 
     def _render(self):
         self.screen.fill(self.COLOR_BG)
+        self.buttons.clear()
 
-        # 1. Ve luoi ban co Kakuro
+        # 1. Ve khung bao ban co Kakuro (Play area)
+        frame_rect = pygame.Rect(
+            self.board_offset_x - 6,
+            self.board_offset_y - 6,
+            self.board_w + 12,
+            self.board_h + 12
+        )
+        pygame.draw.rect(self.screen, self.COLOR_BOARD_BG, frame_rect, border_radius=8)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, frame_rect, 1, border_radius=8)
+
+        # Ve tung o tren ban co
         for r in range(self.puzzle.rows):
             for c in range(self.puzzle.cols):
                 cell = self.puzzle.grid[(r, c)]
                 cell_rect = pygame.Rect(
-                    c * self.cell_size,
-                    r * self.cell_size,
+                    self.board_offset_x + c * self.cell_size,
+                    self.board_offset_y + r * self.cell_size,
                     self.cell_size,
                     self.cell_size,
                 )
@@ -279,90 +325,97 @@ class KakuroGUI:
                 else:
                     self._draw_clue_cell(cell, cell_rect)
 
-                # Ve duong vien o
-                pygame.draw.rect(self.screen, self.COLOR_GRID_LINE, cell_rect, 1)
-
-        # 2. Ve bang dieu khien thao tac ben phai
+        # 2. Ve bang dieu khien thao tac ben phai (Side Panel)
         self._render_side_panel()
 
         pygame.display.flip()
 
     def _draw_clue_cell(self, cell, rect: pygame.Rect):
-        pygame.draw.rect(self.screen, self.COLOR_BLACK_CELL, rect)
+        inner_rect = rect.inflate(-2, -2)
+        pygame.draw.rect(self.screen, self.COLOR_BLACK_CELL, inner_rect, border_radius=4)
+        pygame.draw.rect(self.screen, (34, 40, 56), inner_rect, 1, border_radius=4)
 
-        if cell.is_clue:
-            # Ve duong cheo tu goc tren-trai xuong goc duoi-phai
-            pygame.draw.line(self.screen, self.COLOR_CLUE_LINE, rect.topleft, rect.bottomright, 2)
+        if not cell.is_clue:
+            # O den chan tuong (Barrier cell) - ve cham kim loai tinh te o giua
+            cx, cy = inner_rect.center
+            pygame.draw.circle(self.screen, (45, 54, 72), (cx, cy), 2)
+            return
 
-            # Manh moi doc (Down clue) o tam giac duoi-trai
-            if cell.down_clue is not None:
-                d_surf = self.font_clue.render(str(cell.down_clue), True, self.COLOR_CLUE_TEXT)
-                d_rect = d_surf.get_rect(center=(rect.left + rect.width * 0.28, rect.top + rect.height * 0.72))
-                self.screen.blit(d_surf, d_rect)
+        # O chua manh moi (Clue cell)
+        # 1. Ve duong cheo tu goc tren-trai xuong goc duoi-phai
+        p_start = (inner_rect.left + 2, inner_rect.top + 2)
+        p_end = (inner_rect.right - 2, inner_rect.bottom - 2)
+        pygame.draw.line(self.screen, self.COLOR_CLUE_SLASH, p_start, p_end, 2)
 
-            # Manh moi ngang (Across clue) o tam giac tren-phai
-            if cell.across_clue is not None:
-                a_surf = self.font_clue.render(str(cell.across_clue), True, self.COLOR_CLUE_TEXT)
-                a_rect = a_surf.get_rect(center=(rect.left + rect.width * 0.72, rect.top + rect.height * 0.28))
-                self.screen.blit(a_surf, a_rect)
+        # 2. Manh moi doc (Down clue) o tam giac duoi-trai (Cyan)
+        if cell.down_clue is not None:
+            d_surf = self.font_clue.render(str(cell.down_clue), True, self.COLOR_CLUE_DOWN)
+            d_rect = d_surf.get_rect(center=(inner_rect.left + inner_rect.width * 0.28, inner_rect.top + inner_rect.height * 0.72))
+            self.screen.blit(d_surf, d_rect)
+
+        # 3. Manh moi ngang (Across clue) o tam giac tren-phai (Gold)
+        if cell.across_clue is not None:
+            a_surf = self.font_clue.render(str(cell.across_clue), True, self.COLOR_CLUE_ACROSS)
+            a_rect = a_surf.get_rect(center=(inner_rect.left + inner_rect.width * 0.72, inner_rect.top + inner_rect.height * 0.28))
+            self.screen.blit(a_surf, a_rect)
 
     def _draw_white_cell(self, r: int, c: int, rect: pygame.Rect):
         coord = (r, c)
         is_highlight = (coord == self.highlighted_cell)
+        inner_rect = rect.inflate(-2, -2)
 
         # Mau nen cua o trang
         if self.is_solved:
-            bg_color = (235, 252, 240)
+            bg_color = self.COLOR_SOLVED_BG
+            border_color = self.COLOR_SOLVED_BORDER
+            border_width = 2
         elif is_highlight and self.highlight_type == "assign":
-            bg_color = (210, 248, 225)
+            bg_color = self.COLOR_BG_ASSIGN
+            border_color = self.COLOR_HIGHLIGHT_ASSIGN
+            border_width = 3
         elif is_highlight and self.highlight_type == "backtrack":
-            bg_color = (254, 235, 218)
+            bg_color = self.COLOR_BG_BACKTRACK
+            border_color = self.COLOR_HIGHLIGHT_BACKTRACK
+            border_width = 3
         else:
             bg_color = self.COLOR_WHITE_CELL
+            border_color = self.COLOR_WHITE_BORDER
+            border_width = 1
 
-        pygame.draw.rect(self.screen, bg_color, rect)
+        pygame.draw.rect(self.screen, bg_color, inner_rect, border_radius=4)
+        pygame.draw.rect(self.screen, border_color, inner_rect, border_width, border_radius=4)
 
         # Neu o da duoc gan gia tri: ve so lon giua o
         if coord in self.assignment:
             val_str = str(self.assignment[coord])
-            color = (39, 174, 96) if is_highlight else self.COLOR_ASSIGNED_TEXT
+            color = self.COLOR_HIGHLIGHT_ASSIGN if is_highlight else self.COLOR_ASSIGNED_TEXT
             val_surf = self.font_main.render(val_str, True, color)
-            val_rect = val_surf.get_rect(center=rect.center)
+            val_rect = val_surf.get_rect(center=inner_rect.center)
             self.screen.blit(val_surf, val_rect)
 
         # Neu o chua gan: ve mien gia tri dang luoi 3x3 chu so nho (Pencil-mark subgrid)
         else:
             dom = self.domains.get(coord, set())
             margin = 5
-            sub_w = (rect.width - 2 * margin) / 3
-            sub_h = (rect.height - 2 * margin) / 3
+            sub_w = (inner_rect.width - 2 * margin) / 3
+            sub_h = (inner_rect.height - 2 * margin) / 3
 
             for digit in range(1, 10):
                 sub_r = (digit - 1) // 3
                 sub_c = (digit - 1) % 3
-                dx = rect.left + margin + sub_c * sub_w + sub_w / 2
-                dy = rect.top + margin + sub_r * sub_h + sub_h / 2
+                dx = inner_rect.left + margin + sub_c * sub_w + sub_w / 2
+                dy = inner_rect.top + margin + sub_r * sub_h + sub_h / 2
 
                 if digit in dom:
                     p_surf = self.font_pencil.render(str(digit), True, (75, 85, 105))
                     p_rect = p_surf.get_rect(center=(dx, dy))
                     self.screen.blit(p_surf, p_rect)
                 elif (coord, digit) in self.recently_pruned:
-                    # Hien thi chu so vua bi cat tia mau do
+                    # Hien thi chu so vua bi cat tia mau do va gach cheo
                     p_surf = self.font_pencil.render(str(digit), True, self.COLOR_PRUNED_TEXT)
                     p_rect = p_surf.get_rect(center=(dx, dy))
                     self.screen.blit(p_surf, p_rect)
-                    # Gach cheo the hien bi loai
                     pygame.draw.line(self.screen, self.COLOR_PRUNED_TEXT, (dx - 4, dy - 4), (dx + 4, dy + 4), 1)
-
-        # Ve vien nhan manh neu dang thao tac
-        if is_highlight:
-            h_color = (
-                self.COLOR_HIGHLIGHT_ASSIGN
-                if self.highlight_type == "assign"
-                else self.COLOR_HIGHLIGHT_BACKTRACK
-            )
-            pygame.draw.rect(self.screen, h_color, rect, 3)
 
     def _draw_button(self, btn_id: str, text: str, rect: pygame.Rect, bg_color=None, text_color=None):
         mouse_pos = pygame.mouse.get_pos()
@@ -370,11 +423,16 @@ class KakuroGUI:
 
         if bg_color is None:
             bg_color = self.COLOR_BTN_HOVER if is_hover else self.COLOR_BTN_NORMAL
+        elif is_hover:
+            # Lam sang nhe mau nen khi hover
+            bg_color = tuple(min(255, c + 25) for c in bg_color)
+
         if text_color is None:
             text_color = (255, 255, 255) if is_hover else self.COLOR_TEXT
 
-        pygame.draw.rect(self.screen, bg_color, rect, border_radius=4)
-        pygame.draw.rect(self.screen, (70, 78, 95), rect, 1, border_radius=4)
+        pygame.draw.rect(self.screen, bg_color, rect, border_radius=5)
+        border_col = (90, 105, 135) if is_hover else (55, 65, 85)
+        pygame.draw.rect(self.screen, border_col, rect, 1, border_radius=5)
 
         txt_surf = self.font_panel_bold.render(text, True, text_color)
         txt_rect = txt_surf.get_rect(center=rect.center)
@@ -383,129 +441,220 @@ class KakuroGUI:
         self.buttons[btn_id] = rect
 
     def _render_side_panel(self):
-        panel_x = self.grid_width
-        pygame.draw.rect(
-            self.screen,
-            self.COLOR_PANEL_BG,
-            (panel_x, 0, self.PANEL_WIDTH, self.window_height),
-        )
-        pygame.draw.line(
-            self.screen,
-            self.COLOR_GRID_LINE,
-            (panel_x, 0),
-            (panel_x, self.window_height),
-            2,
-        )
+        panel_x = self.play_area_w
+        panel_rect = pygame.Rect(panel_x, 0, self.PANEL_WIDTH, self.window_height)
 
-        y = 15
-        # Title
-        title = self.font_title.render("KAKURO CSP VISUALIZER", True, (255, 255, 255))
-        self.screen.blit(title, (panel_x + 18, y))
-        y += 30
+        pygame.draw.rect(self.screen, self.COLOR_PANEL_BG, panel_rect)
+        pygame.draw.line(self.screen, self.COLOR_BORDER, (panel_x, 0), (panel_x, self.window_height), 2)
 
-        # --- SECTION 1: CHON DE TREN GUI ---
-        puz_lbl = self.font_panel_bold.render("File de:", True, self.COLOR_TEXT_MUTED)
-        self.screen.blit(puz_lbl, (panel_x + 18, y + 5))
+        px = panel_x + 18
+        pw = self.PANEL_WIDTH - 36
+        y = 14
 
-        self._draw_button("puzzle_prev", "<", pygame.Rect(panel_x + 85, y, 28, 26))
-        puz_name = self.available_puzzles[self.current_puzzle_idx][0]
-        puz_box = pygame.Rect(panel_x + 117, y, 195, 26)
-        pygame.draw.rect(self.screen, (38, 42, 52), puz_box, border_radius=3)
-        puz_surf = self.font_panel.render(puz_name, True, self.COLOR_TEXT)
-        self.screen.blit(puz_surf, puz_surf.get_rect(center=puz_box.center))
-        self._draw_button("puzzle_next", ">", pygame.Rect(panel_x + 316, y, 28, 26))
-        y += 36
+        # --- SECTION 0: HEADER & NUT QUAY VE MENU ---
+        self._draw_button("menu", "< MENU CHINH", pygame.Rect(px, y, 120, 28), bg_color=(185, 28, 28))
+        tag_surf = self.font_tag.render("AI PROJECT - TASK 3", True, (142, 68, 173))
+        self.screen.blit(tag_surf, (px + pw - tag_surf.get_width(), y + 6))
+        y += 34
 
-        # --- SECTION 2: CHON THUAT TOAN TREN GUI ---
-        cfg_lbl = self.font_panel_bold.render("Thuat toan:", True, self.COLOR_TEXT_MUTED)
-        self.screen.blit(cfg_lbl, (panel_x + 18, y + 5))
-
-        self._draw_button("config_prev", "<", pygame.Rect(panel_x + 105, y, 28, 26))
-        cfg_name = CONFIG_OPTIONS[self.current_config_idx][0]
-        cfg_box = pygame.Rect(panel_x + 137, y, 175, 26)
-        pygame.draw.rect(self.screen, (38, 42, 52), cfg_box, border_radius=3)
-        cfg_surf = self.font_panel.render(cfg_name[:20], True, (52, 152, 219))
-        self.screen.blit(cfg_surf, cfg_surf.get_rect(center=cfg_box.center))
-        self._draw_button("config_next", ">", pygame.Rect(panel_x + 316, y, 28, 26))
-        y += 42
-
-        # --- SECTION 3: CAC NUT BAM DIEU KHIEN CHINH ---
-        play_txt = "PAUSE" if not self.is_paused else "PLAY"
-        play_color = (192, 57, 43) if not self.is_paused else (39, 174, 96)
-        self._draw_button("play_pause", play_txt, pygame.Rect(panel_x + 18, y, 105, 32), bg_color=play_color)
-        self._draw_button("step", "STEP >", pygame.Rect(panel_x + 133, y, 105, 32))
-        self._draw_button("reset", "RESET", pygame.Rect(panel_x + 248, y, 105, 32))
-        y += 42
-
-        # --- SECTION 4: TOC DO FPS ---
-        speed_label = self.font_panel.render(f"Toc do buoc: {self.fps} buoc/s", True, self.COLOR_TEXT_MUTED)
-        self.screen.blit(speed_label, (panel_x + 18, y + 5))
-        self._draw_button("speed_down", "- Speed", pygame.Rect(panel_x + 185, y, 80, 26))
-        self._draw_button("speed_up", "+ Speed", pygame.Rect(panel_x + 273, y, 80, 26))
-        y += 36
-
-        # --- SECTION 5: THONG KE THUAT TOAN (REAL-TIME METRICS) ---
-        pygame.draw.line(self.screen, self.COLOR_GRID_LINE, (panel_x + 18, y), (panel_x + self.PANEL_WIDTH - 18, y), 1)
-        y += 10
-
-        status_text = "SOLVED (HOAN TAT)" if self.is_solved else ("RUNNING..." if not self.is_paused else "PAUSED")
-        status_color = (46, 204, 113) if self.is_solved else ((52, 152, 219) if not self.is_paused else (241, 196, 15))
-        st_surf = self.font_panel_bold.render(f"Trang thai: {status_text}", True, status_color)
-        self.screen.blit(st_surf, (panel_x + 18, y))
+        t_title = self.font_title.render("KAKURO CSP SOLVER", True, (255, 255, 255))
+        self.screen.blit(t_title, (px, y))
+        y += 20
+        t_sub = self.font_subtitle.render("Constraint Satisfaction & Arc Consistency (GAC/MAC)", True, self.COLOR_TEXT_MUTED)
+        self.screen.blit(t_sub, (px, y))
         y += 24
 
+        # --- CARD 1: CHON DE & CHON THUAT TOAN ---
+        c1_rect = pygame.Rect(px, y, pw, 78)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BG, c1_rect, border_radius=6)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, c1_rect, 1, border_radius=6)
+
+        # Hang 1: Chon de
+        cy = c1_rect.top + 8
+        lbl_puz = self.font_panel_bold.render("File de:", True, self.COLOR_TEXT_MUTED)
+        self.screen.blit(lbl_puz, (px + 10, cy + 4))
+
+        self._draw_button("puzzle_prev", "<", pygame.Rect(px + 75, cy, 26, 24))
+        puz_name = self.available_puzzles[self.current_puzzle_idx][0]
+        puz_box = pygame.Rect(px + 106, cy, pw - 142, 24)
+        pygame.draw.rect(self.screen, (16, 20, 28), puz_box, border_radius=3)
+        p_surf = self.font_panel.render(puz_name[:24], True, (255, 255, 255))
+        self.screen.blit(p_surf, p_surf.get_rect(center=puz_box.center))
+        self._draw_button("puzzle_next", ">", pygame.Rect(px + pw - 32, cy, 26, 24))
+
+        # Hang 2: Chon thuat toan
+        cy += 34
+        lbl_cfg = self.font_panel_bold.render("Giai thuat:", True, self.COLOR_TEXT_MUTED)
+        self.screen.blit(lbl_cfg, (px + 10, cy + 4))
+
+        self._draw_button("config_prev", "<", pygame.Rect(px + 75, cy, 26, 24))
+        cfg_name = CONFIG_OPTIONS[self.current_config_idx][0]
+        cfg_box = pygame.Rect(px + 106, cy, pw - 142, 24)
+        pygame.draw.rect(self.screen, (16, 20, 28), cfg_box, border_radius=3)
+        c_surf = self.font_panel.render(cfg_name[:22], True, (56, 189, 248))
+        self.screen.blit(c_surf, c_surf.get_rect(center=cfg_box.center))
+        self._draw_button("config_next", ">", pygame.Rect(px + pw - 32, cy, 26, 24))
+
+        y += 86
+
+        # --- CARD 2: DIEU KHIEN PLAYBACK & SPEED ---
+        c2_rect = pygame.Rect(px, y, pw, 78)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BG, c2_rect, border_radius=6)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, c2_rect, 1, border_radius=6)
+
+        # Cac nut chinh: PLAY/PAUSE, STEP, RESET
+        btn_y = c2_rect.top + 8
+        play_txt = "PAUSE" if not self.is_paused else "PLAY"
+        play_color = (220, 38, 38) if not self.is_paused else (16, 185, 129)
+        btn_w = (pw - 24) // 3
+
+        self._draw_button("play_pause", play_txt, pygame.Rect(px + 8, btn_y, btn_w, 28), bg_color=play_color)
+        self._draw_button("step", "STEP >", pygame.Rect(px + 8 + btn_w + 4, btn_y, btn_w, 28), bg_color=(79, 70, 229))
+        self._draw_button("reset", "RESET", pygame.Rect(px + 8 + (btn_w + 4) * 2, btn_y, btn_w, 28), bg_color=(51, 65, 85))
+
+        # Speed controller row
+        spd_y = btn_y + 36
+        spd_txt = self.font_panel.render(f"Toc do mo phong: {self.fps} buoc/giay", True, self.COLOR_TEXT_MUTED)
+        self.screen.blit(spd_txt, (px + 12, spd_y + 4))
+
+        self._draw_button("speed_down", "- Cham", pygame.Rect(px + pw - 145, spd_y, 68, 24))
+        self._draw_button("speed_up", "+ Nhanh", pygame.Rect(px + pw - 72, spd_y, 68, 24))
+
+        y += 86
+
+        # --- CARD 3: TIEN DO & CHI SO REAL-TIME CSP METRICS ---
+        c3_rect = pygame.Rect(px, y, pw, 110)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BG, c3_rect, border_radius=6)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, c3_rect, 1, border_radius=6)
+
+        my_y = c3_rect.top + 8
+        # Status header
+        status_text = "SOLVED (HOAN TAT!)" if self.is_solved else ("DANG GIAI (RUNNING)..." if not self.is_paused else "TAM DUNG (PAUSED)")
+        status_color = (16, 185, 129) if self.is_solved else ((56, 189, 248) if not self.is_paused else (251, 191, 36))
+        st_surf = self.font_panel_bold.render(f"Trang thai: {status_text}", True, status_color)
+        self.screen.blit(st_surf, (px + 12, my_y))
+
+        # Progress bar
+        my_y += 20
         n_assigned = len(self.assignment)
         n_total = len(self.puzzle.white_cells)
         pct = int(n_assigned / n_total * 100) if n_total > 0 else 0
-        progress_surf = self.font_panel.render(f"Tien do: {n_assigned}/{n_total} o ({pct}%)", True, self.COLOR_TEXT)
-        self.screen.blit(progress_surf, (panel_x + 18, y))
-        y += 20
+        p_txt = self.font_panel.render(f"Tien do: {n_assigned}/{n_total} o ({pct}%)", True, self.COLOR_TEXT)
+        self.screen.blit(p_txt, (px + 12, my_y))
 
-        nodes_surf = self.font_panel.render(f"Nodes explored (Gan thu) : {self.nodes_explored}", True, self.COLOR_TEXT)
-        self.screen.blit(nodes_surf, (panel_x + 18, y))
-        y += 20
+        my_y += 18
+        bar_bg = pygame.Rect(px + 12, my_y, pw - 24, 7)
+        pygame.draw.rect(self.screen, (16, 20, 28), bar_bg, border_radius=3)
+        fill_w = max(0, int((pw - 24) * (pct / 100.0)))
+        pygame.draw.rect(self.screen, (16, 185, 129), (px + 12, my_y, fill_w, 7), border_radius=3)
 
-        bts_surf = self.font_panel.render(f"Backtracks (Quay lui)    : {self.backtracks}", True, (230, 126, 34))
-        self.screen.blit(bts_surf, (panel_x + 18, y))
-        y += 20
+        # 3 Metrics tiles
+        my_y += 14
+        tile_w = (pw - 28) // 3
+        tile_h = 36
 
-        prune_surf = self.font_panel.render(f"Prunings (Gia tri cat)   : {self.prunings_count}", True, (231, 76, 60))
-        self.screen.blit(prune_surf, (panel_x + 18, y))
-        y += 28
+        # Tile 1: Nodes
+        t1_rect = pygame.Rect(px + 10, my_y, tile_w, tile_h)
+        pygame.draw.rect(self.screen, (16, 20, 28), t1_rect, border_radius=4)
+        pygame.draw.rect(self.screen, (35, 45, 62), t1_rect, 1, border_radius=4)
+        t1_lbl = self.font_tag.render("NODES", True, self.COLOR_TEXT_MUTED)
+        t1_val = self.font_panel_bold.render(str(self.nodes_explored), True, (56, 189, 248))
+        self.screen.blit(t1_lbl, t1_lbl.get_rect(center=(t1_rect.centerx, t1_rect.top + 10)))
+        self.screen.blit(t1_val, t1_val.get_rect(center=(t1_rect.centerx, t1_rect.top + 24)))
 
-        # --- SECTION 6: CHU GIAI TRUC QUAN (LEGEND) ---
-        pygame.draw.line(self.screen, self.COLOR_GRID_LINE, (panel_x + 18, y), (panel_x + self.PANEL_WIDTH - 18, y), 1)
-        y += 8
-        leg_title = self.font_panel_bold.render("Chu giai mau sac:", True, self.COLOR_TEXT_MUTED)
-        self.screen.blit(leg_title, (panel_x + 18, y))
-        y += 20
+        # Tile 2: Backtracks
+        t2_rect = pygame.Rect(px + 10 + tile_w + 4, my_y, tile_w, tile_h)
+        pygame.draw.rect(self.screen, (16, 20, 28), t2_rect, border_radius=4)
+        pygame.draw.rect(self.screen, (35, 45, 62), t2_rect, 1, border_radius=4)
+        t2_lbl = self.font_tag.render("BACKTRACKS", True, self.COLOR_TEXT_MUTED)
+        t2_val = self.font_panel_bold.render(str(self.backtracks), True, (249, 115, 22))
+        self.screen.blit(t2_lbl, t2_lbl.get_rect(center=(t2_rect.centerx, t2_rect.top + 10)))
+        self.screen.blit(t2_val, t2_val.get_rect(center=(t2_rect.centerx, t2_rect.top + 24)))
 
-        # Item 1: Xanh la
-        pygame.draw.rect(self.screen, (46, 204, 113), (panel_x + 18, y + 2, 12, 12), border_radius=2)
-        l1 = self.font_panel.render("Xanh la: Vua duoc gan gia tri", True, self.COLOR_TEXT)
-        self.screen.blit(l1, (panel_x + 36, y))
-        y += 18
+        # Tile 3: Prunings
+        t3_rect = pygame.Rect(px + 10 + (tile_w + 4) * 2, my_y, tile_w, tile_h)
+        pygame.draw.rect(self.screen, (16, 20, 28), t3_rect, border_radius=4)
+        pygame.draw.rect(self.screen, (35, 45, 62), t3_rect, 1, border_radius=4)
+        t3_lbl = self.font_tag.render("PRUNINGS", True, self.COLOR_TEXT_MUTED)
+        t3_val = self.font_panel_bold.render(str(self.prunings_count), True, (239, 68, 68))
+        self.screen.blit(t3_lbl, t3_lbl.get_rect(center=(t3_rect.centerx, t3_rect.top + 10)))
+        self.screen.blit(t3_val, t3_val.get_rect(center=(t3_rect.centerx, t3_rect.top + 24)))
 
-        # Item 2: Do
-        pygame.draw.rect(self.screen, (231, 76, 60), (panel_x + 18, y + 2, 12, 12), border_radius=2)
-        l2 = self.font_panel.render("Do (gach): Gia tri bi cat tia khoi mien", True, self.COLOR_TEXT)
-        self.screen.blit(l2, (panel_x + 36, y))
-        y += 18
+        y += 118
 
-        # Item 3: Cam
-        pygame.draw.rect(self.screen, (230, 126, 34), (panel_x + 18, y + 2, 12, 12), border_radius=2)
-        l3 = self.font_panel.render("Cam: Quay lui hoan tac gia tri", True, self.COLOR_TEXT)
-        self.screen.blit(l3, (panel_x + 36, y))
-        y += 24
+        # --- CARD 4: BIEU DO COT THUAT TOAN (VERTICAL COLUMN CHART) & CHU GIAI ---
+        c4_rect = pygame.Rect(px, y, pw, 154)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BG, c4_rect, border_radius=6)
+        pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, c4_rect, 1, border_radius=6)
 
-        # --- SECTION 7: NHAT KY LOGS ---
-        pygame.draw.line(self.screen, self.COLOR_GRID_LINE, (panel_x + 18, y), (panel_x + self.PANEL_WIDTH - 18, y), 1)
-        y += 8
-        log_title = self.font_panel_bold.render("Nhat ky thuat toan (Logs):", True, (255, 255, 255))
-        self.screen.blit(log_title, (panel_x + 18, y))
-        y += 20
+        c4_y = c4_rect.top + 8
+        c4_title = self.font_panel_bold.render("So sanh Thuat toan (Do tren de 5x5):", True, (255, 255, 255))
+        self.screen.blit(c4_title, (px + 12, c4_y))
 
-        for line in self.logs[-5:]:
-            log_line = self.font_panel.render(line[:42], True, self.COLOR_TEXT_MUTED)
-            self.screen.blit(log_line, (panel_x + 18, y))
-            y += 18
+        # Vertical column chart box
+        chart_box = pygame.Rect(px + 12, c4_y + 18, pw - 24, 68)
+        pygame.draw.rect(self.screen, (16, 20, 28), chart_box, border_radius=4)
+        pygame.draw.rect(self.screen, (35, 44, 60), chart_box, 1, border_radius=4)
+
+        base_y = chart_box.bottom - 16
+        pygame.draw.line(self.screen, (55, 65, 85), (chart_box.left + 8, base_y), (chart_box.right - 8, base_y), 1)
+
+        # Cac cot so sanh: MAC (12n, 0bt), FC (13n, 1bt), Pure BT (6468n, 712bt)
+        col_data = [
+            ("BT+MAC", 12, 50, "12 n", (16, 185, 129)),
+            ("BT+FC", 13, 50, "13 n", (56, 189, 248)),
+            ("Pure+MRV", 71, 100, "71 n", (251, 191, 36)),
+            ("Pure BT", 100, 100, "6.5k", (239, 68, 68)),
+        ]
+        num_c = len(col_data)
+        c_w = 34
+        c_gap = (chart_box.width - 16 - num_c * c_w) / (num_c + 1)
+        max_h = 36
+
+        for idx, (lbl, val, max_v, v_str, col_color) in enumerate(col_data):
+            bx = chart_box.left + 8 + c_gap * (idx + 1) + c_w * idx
+            ratio = val / max_v
+            bh = max(4, int(ratio * max_h))
+            b_r = pygame.Rect(bx, base_y - bh, c_w, bh)
+            pygame.draw.rect(self.screen, col_color, b_r, border_top_left_radius=3, border_top_right_radius=3)
+
+            # Value on top
+            val_s = self.font_tag.render(v_str, True, (255, 255, 255))
+            self.screen.blit(val_s, val_s.get_rect(midbottom=(b_r.centerx, b_r.top - 1)))
+
+            # Label below baseline
+            lbl_s = self.font_tag.render(lbl, True, self.COLOR_TEXT_MUTED)
+            self.screen.blit(lbl_s, lbl_s.get_rect(midtop=(b_r.centerx, base_y + 2)))
+
+        # Legend pills
+        leg_y = chart_box.bottom + 8
+        pygame.draw.rect(self.screen, (16, 185, 129), (px + 14, leg_y + 2, 10, 10), border_radius=2)
+        l1 = self.font_panel.render("Xanh: Gan moi", True, self.COLOR_TEXT)
+        self.screen.blit(l1, (px + 28, leg_y))
+
+        pygame.draw.rect(self.screen, (249, 115, 22), (px + 140, leg_y + 2, 10, 10), border_radius=2)
+        l2 = self.font_panel.render("Cam: Quay lui", True, self.COLOR_TEXT)
+        self.screen.blit(l2, (px + 154, leg_y))
+
+        pygame.draw.rect(self.screen, (239, 68, 68), (px + 260, leg_y + 2, 10, 10), border_radius=2)
+        l3 = self.font_panel.render("Do: Cat tia GAC", True, self.COLOR_TEXT)
+        self.screen.blit(l3, (px + 274, leg_y))
+
+        y += 162
+
+        # --- CARD 5: NHAT KY THUAT TOAN (LOGS TERMINAL) ---
+        c5_rect = pygame.Rect(px, y, pw, self.window_height - y - 14)
+        if c5_rect.height >= 70:
+            pygame.draw.rect(self.screen, (16, 20, 28), c5_rect, border_radius=6)
+            pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, c5_rect, 1, border_radius=6)
+
+            log_t = self.font_tag.render("THONG TIN BUOC GIAI HIEN TAI (LOGS):", True, self.COLOR_TEXT_MUTED)
+            self.screen.blit(log_t, (px + 12, c5_rect.top + 6))
+
+            ly = c5_rect.top + 22
+            for line in self.logs[-4:]:
+                if ly + 16 > c5_rect.bottom - 4:
+                    break
+                log_line = self.font_panel.render(f"> {line[:46]}", True, (220, 230, 245))
+                self.screen.blit(log_line, (px + 12, ly))
+                ly += 16

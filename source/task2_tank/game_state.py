@@ -1,5 +1,5 @@
 import os
-from task2_tank.entities import Direction, Tank, Base, Wall, Bullet, Entity
+from task2_tank.entities import Direction, Tank, Base, Wall, Bullet, Forest, Entity
 
 
 class GameState:
@@ -11,6 +11,7 @@ class GameState:
 
         # Cac thuc the tren ban co
         self.walls: dict[tuple[int, int], Wall] = {}
+        self.forests: dict[tuple[int, int], Forest] = {}
         self.tanks: dict[int, Tank] = {}
         self.bases: dict[int, Base] = {}
         self.bullets: list[Bullet] = []
@@ -53,6 +54,7 @@ class GameState:
         new_state.turn_count = self.turn_count
 
         new_state.walls = {pos: w.clone() for pos, w in self.walls.items() if w.is_alive}
+        new_state.forests = {pos: f.clone() for pos, f in self.forests.items()}
         new_state.tanks = {pid: t.clone() for pid, t in self.tanks.items()}
         new_state.bases = {pid: b.clone() for pid, b in self.bases.items()}
         new_state.bullets = [b.clone() for b in self.bullets if b.is_active]
@@ -116,6 +118,9 @@ class GameState:
                 elif char == "@":
                     # Tuong thep
                     state.walls[(r, c)] = Wall(r, c, hp=Wall.INITIAL_HP, is_steel=True)
+                elif char == "T":
+                    # Rung cay xanh / Bui co (Forest / Trees) - Chuan Battle City 1990
+                    state.forests[(r, c)] = Forest(r, c)
                 elif char == "1":
                     # Tank 0 (Player 1) - mac dinh quay len UP
                     state.tanks[0] = Tank(player_id=0, r=r, c=c, direction=Direction.UP)
@@ -147,10 +152,14 @@ class GameState:
         # Bieu dien trang thai game thanh van ban ASCII
         grid = [["." for _ in range(self.cols)] for _ in range(self.rows)]
 
-        # 1. Ve tuong
+        # 1. Ve tuong va rung cay
         for (r, c), w in self.walls.items():
             if w.is_alive:
                 grid[r][c] = "@" if w.is_steel else str(w.hp)
+
+        for (r, c) in self.forests:
+            if grid[r][c] == ".":
+                grid[r][c] = "T"
 
         # 2. Ve base
         for pid, b in self.bases.items():

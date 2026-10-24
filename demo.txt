@@ -1,0 +1,39 @@
+TRUONG DAI HOC TON DUC THANG
+KHOA CONG NGHE THONG TIN
+DO AN CUOI KY: NHAP MON TRI TUE NHAN TAO (503043)
+NHOM: 08
+GIANG VIEN HUONG DAN: ThS. Nguyen Thanh An (nguyenthanhan@tdtu.edu.vn)
+
+================================================================================
+1. LINK VIDEO DEMO DO AN
+================================================================================
+URL Video Demo: https://youtu.be/placeholder-demo-ai-final-nhom08
+(Hoac link Google Drive: https://drive.google.com/drive/folders/placeholder-demo-nhom08)
+
+* Noi dung video demo:
+- Gioi thieu tong quan do an va Dashboard trung tam (1-Click Run).
+- Task 1: Mo phong N-Queens ban co truc quan, SAT Glucose3 va Min-Conflicts.
+- Task 2: Mo phong Tank Battle, thi dau giua Heuristic Alpha-Beta va Minimax.
+- Task 3: Mo phong Kakuro CSP voi luoi but chi 3x3 (pencil-mark), AC-3 va MAC.
+- Giai thich luoc do phan tich, so sanh hieu nang va phong van hoi dong.
+
+================================================================================
+2. BANG PHAN CONG CONG VIEC & TY LE DONG GOP (NHOM 08)
+================================================================================
+Thanh vien 1:
+- Ho va ten: Le Phu
+- MSSV: 524H0121
+- Nhiem vu: Phu trach Task 1 (N-Queens SAT Glucose3, Ma hoa CNF, Min-Conflicts Heuristic), Tich hop Master Dashboard, Kiem thu tong the.
+- Muc do hoan thanh: 100%
+
+Thanh vien 2:
+- Ho va ten: Vu Giang Huy
+- MSSV: 524H0095
+- Nhiem vu: Phu trach Task 2 (Tank Battle Game, Mo hinh Zero-Sum Game, Adversarial Search: Minimax, Alpha-Beta, Heuristic Evaluator, Nap dong Agent, Pygame GUI).
+- Muc do hoan thanh: 100%
+
+Thanh vien 3:
+- Ho va ten: Le Hoang Minh Khoi
+- MSSV: 524H0102
+- Nhiem vu: Phu trach Task 3 (Kakuro CSP Formulation, Lan truyen rang buoc GAC/AC-3, Forward Checking, MAC, Heuristics MRV+Degree+LCV, Pencil-mark Visualizer).
+- Muc do hoan thanh: 100%

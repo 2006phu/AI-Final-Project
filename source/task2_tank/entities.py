@@ -139,6 +139,26 @@ class Wall(Entity):
         return f"{w_type}(pos=({self.r},{self.c}), hp={self.hp})"
 
 
+class Forest:
+    """Dia hinh Bui cay / Rung ram (Trees / Forest) - chuan Battle City 1990.
+    
+    Xe tang co the di vao va an nap duoi tan cay. Dan bay xuyen qua ma khong pha huy cay.
+    """
+    def __init__(self, r: int, c: int):
+        self.r = r
+        self.c = c
+
+    @property
+    def pos(self) -> tuple[int, int]:
+        return (self.r, self.c)
+
+    def clone(self) -> "Forest":
+        return Forest(self.r, self.c)
+
+    def __repr__(self) -> str:
+        return f"Forest(pos=({self.r},{self.c}))"
+
+
 class Bullet:
     SPEED = 3
 

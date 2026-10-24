@@ -82,3 +82,27 @@ def test_dynamic_agent_discovery():
     custom = discover_custom_agents(agents_dir)
     # Khong ném ngoai le, tra ve dict
     assert isinstance(custom, dict)
+
+
+def test_forest_tile_passable_and_bullet_passthrough():
+    map_str = """
+    . . .
+    1 T 2
+    A . B
+    """
+    state = GameState.from_string(map_str)
+    assert len(state.forests) == 1
+    assert (1, 1) in state.forests
+
+    # Xe tang co the tien vao rung
+    assert state.is_passable_for_tank(1, 1) is True
+
+    # Dan bay xuyen qua rung khong bi triet tieu
+    next_s = GameEngine.step(state, Action.MOVE_RIGHT, Action.STAY)
+    assert next_s.tanks[0].pos == (1, 1)  # Tank 0 da tien vao o rung
+
+    # Ban dan tu trong rung hoac xuyen qua rung
+    shoot_s = GameEngine.step(next_s, Action.FIRE, Action.STAY)
+    # Dan bay tu o rung (1, 1) sang phai va tan cong vao Tank 2 o (1, 2)
+    assert shoot_s.tanks[1].hp < Tank.INITIAL_HP
+
