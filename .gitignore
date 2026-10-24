@@ -1,0 +1,22 @@
+# Tai lieu noi bo, khong dua len github
+THIET_KE_HE_THONG.md
+context_handoff.md
+2627-HK1-AI-CK.md
+2627-HK1-AI-CK.pdf
+images/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.venv/
+venv/
+
+# Goi nop bai
+*.zip
+
+# He dieu hanh / editor
+.DS_Store
+Thumbs.db
+.vscode/
