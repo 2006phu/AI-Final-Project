@@ -172,20 +172,3 @@ Các file sổ tay thực nghiệm đã được chạy và lưu sẵn đầy đ
 
 ---
 
-## 📦 7. ĐÓNG GÓI BÀI NỘP TỰ ĐỘNG
-
-Dự án cung cấp công cụ tự động làm sạch cache và đóng gói thành 3 file `.zip` theo đúng quy định đặt tên của môn học: `AI_final_<Mã nhóm>_<MSSV>.zip`:
-
-```bash
-python package_submission.py
-```
-
-Lệnh này sẽ tự động sinh ra 3 file nộp bài cho từng thành viên:
-1. `AI_final_08_524H0121.zip` (Lê Phú)
-2. `AI_final_08_524H0095.zip` (Vũ Giang Huy)
-3. `AI_final_08_524H0102.zip` (Lê Hoàng Minh Khôi)
-
-Mỗi file nộp bài bao gồm đầy đủ:
-- `report.pdf`
-- `demo.txt`
-- `source/` (mã nguồn hoàn chỉnh, không chứa cache thừa `__pycache__`, `.pytest_cache`, `.git`, `.venv`).
