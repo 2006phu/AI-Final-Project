@@ -50,6 +50,17 @@ def test_puzzle_parsing_and_solution_5x5():
     assert not is_valid and "trung" in msg.lower()
 
 
+def test_puzzle_parsing_and_solution_complex_9x9():
+    p_path = os.path.join(os.path.dirname(__file__), "..", "puzzles", "complex_9x9.txt")
+    puzzle = KakuroPuzzle.from_file(p_path)
+
+    assert puzzle.rows == 9 and puzzle.cols == 9
+    assert len(puzzle.white_cells) == 48
+
+    is_ok, sum_h, sum_v = puzzle.verify_clue_integrity()
+    assert is_ok and sum_h == 249 and sum_v == 249
+
+
 def test_clue_integrity_failure_detection():
     # De sai tong H != V phai nem ValueError
     invalid_content = """

@@ -96,6 +96,12 @@ class KakuroGUI:
                 if os.path.basename(ppath).lower() == target_base:
                     self.current_puzzle_idx = idx
                     break
+        else:
+            # Mac dinh uu tien load example_5x5.txt (de bai mau trong de thi)
+            for idx, (_, ppath) in enumerate(self.available_puzzles):
+                if "example_5x5" in os.path.basename(ppath).lower():
+                    self.current_puzzle_idx = idx
+                    break
 
         self.current_config_idx = 0
 
