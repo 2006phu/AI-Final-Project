@@ -633,8 +633,8 @@ class MasterDashboard:
                     "title": "1. Số Node duyệt tại độ sâu d=2 (Map arena_11x11):",
                     "badge": "Cắt tỉa 70% Nodes",
                     "bars": [
-                        ("Alpha-Beta Pruning", 22, 72, "22 nodes", (16, 185, 129)),
-                        ("Standard Minimax", 72, 72, "72 nodes", (239, 68, 68)),
+                        ("Alpha-Beta Pruning", 11, 36, "11 nodes", (16, 185, 129)),
+                        ("Standard Minimax", 36, 36, "36 nodes", (239, 68, 68)),
                     ]
                 },
                 {
@@ -876,7 +876,7 @@ class MasterDashboard:
                     "Dia hinh Rung cay xanh T: Xe tang an nap nguy trang, dan bay xuyen qua rung chuan Battle City 1990.",
                 ]),
                 ("2. 4 Cau hinh doi sanh cot loi (Rubric cham diem):", [
-                    "Minimax Search: Duyet toan bo cay tro choi do sau d (72 nodes tai d=2).",
+                    "Minimax Search: Duyet toan bo cay tro choi do sau d (36 nodes tai d=2).",
                     "Alpha-Beta Pruning: Cat tia cac nhanh beta <= alpha, cat bo 70% so nut ma van giu gia tri toi uu.",
                     "Heuristic Minimax & Heuristic Alpha-Beta: Ket hop ham danh gia da muc tieu voi BFS tim duong.",
                 ]),

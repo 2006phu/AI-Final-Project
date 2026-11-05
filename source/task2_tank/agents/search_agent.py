@@ -121,7 +121,6 @@ class SearchAgent(BaseAgent):
             min_val = float("inf")
             curr_beta = float("inf")
             for a_min in opp_actions:
-                self.nodes_explored += 1
                 next_state = GameEngine.step(
                     state,
                     a_max if player_id == 0 else a_min,
