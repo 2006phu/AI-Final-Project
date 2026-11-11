@@ -102,6 +102,8 @@ class NQueensGUI:
         self.clauses_count = 0
         self.vars_count = 0
 
+        self.PANEL_WIDTH = 380
+
         # Kich thuoc o co tu dong co gian phu hop voi N
         if n <= 8:
             self.cell_size = 65

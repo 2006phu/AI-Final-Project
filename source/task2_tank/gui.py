@@ -168,9 +168,6 @@ class TankBattleGUI:
         self.p1_agent = self._instantiate_agent(self.current_p1_idx)
         self.p2_agent = self._instantiate_agent(self.current_p2_idx)
 
-        # Nap ban do dau tien
-        self._load_current_map()
-
         # Su dung he thong font he thong ro net ho tro Unicode va doc thoai mai tren High-DPI
         font_family = "segoeui,tahoma,arial,consolas"
         self.font = pygame.font.SysFont(font_family, 13)
@@ -179,6 +176,9 @@ class TankBattleGUI:
         self.font_mini = pygame.font.SysFont(font_family, 12)
         self.font_tag = pygame.font.SysFont(font_family, 11, bold=True)
         self.clock = pygame.time.Clock()
+
+        # Nap ban do dau tien
+        self._load_current_map()
 
         self.is_running = True
         self.is_paused = True

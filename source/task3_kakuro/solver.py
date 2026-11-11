@@ -297,6 +297,7 @@ class BacktrackingSolver:
                         return True
 
                 # Quay lui (Backtrack)
+                del assignment[var]
                 yield SolverEvent(
                     EventType.UNASSIGN,
                     var=var,
@@ -316,7 +317,6 @@ class BacktrackingSolver:
                         assignment_snapshot=assignment,
                         domains_snapshot=csp.domains,
                     )
-                del assignment[var]
 
             return False
 

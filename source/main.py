@@ -59,7 +59,11 @@ class MasterDashboard:
         pygame.init()
         pygame.font.init()
 
-        # He thong font chu Segoe UI / Tahoma ho tro tieng Viet khong dau sac net
+        self.clock = pygame.time.Clock()
+        self.is_running = True
+        self.current_view = "menu"  # "menu", "task1_hub", "task2_hub", "task3_hub", "demo"
+        self.active_modal: str | None = None  # "task1", "task2", "task3", "team", None
+
         font_family = "segoeui,tahoma,arial,consolas"
         self.font_univ = pygame.font.SysFont(font_family, 12, bold=True)
         self.font_title = pygame.font.SysFont(font_family, 20, bold=True)
@@ -71,11 +75,6 @@ class MasterDashboard:
         self.font_footer = pygame.font.SysFont(font_family, 12)
         self.font_tag = pygame.font.SysFont(font_family, 11, bold=True)
         self.font_arcade = pygame.font.SysFont(font_family, 14, bold=True)
-
-        self.clock = pygame.time.Clock()
-        self.is_running = True
-        self.current_view = "menu"  # "menu", "task1_hub", "task2_hub", "task3_hub", "demo"
-        self.active_modal: str | None = None  # "task1", "task2", "task3", "team", None
 
         self.buttons: dict[str, pygame.Rect] = {}
         self.demo_results: dict | None = None
@@ -279,9 +278,10 @@ class MasterDashboard:
         self.buttons.clear()
 
         # 1. Header Banner
-        header_rect = pygame.Rect(0, 0, self.WINDOW_WIDTH, 90)
+        header_h = 90
+        header_rect = pygame.Rect(0, 0, self.WINDOW_WIDTH, header_h)
         pygame.draw.rect(self.screen, self.COLOR_HEADER_BG, header_rect)
-        pygame.draw.line(self.screen, self.COLOR_BORDER, (0, 90), (self.WINDOW_WIDTH, 90), 2)
+        pygame.draw.line(self.screen, self.COLOR_BORDER, (0, header_h), (self.WINDOW_WIDTH, header_h), 2)
 
         univ_txt = self.font_univ.render("TRUONG DAI HOC TON DUC THANG - KHOA CONG NGHE THONG TIN", True, self.COLOR_ACCENT)
         self.screen.blit(univ_txt, (35, 14))
@@ -293,18 +293,22 @@ class MasterDashboard:
         self.screen.blit(sub_txt, (35, 62))
 
         # 2. KHUNG TRANH POSTER GAME ARCADE BEN TRAI (Left Poster Art)
-        poster_rect = pygame.Rect(35, 110, 440, 500)
+        poster_w = 440
+        poster_h = 500
+        poster_rect = pygame.Rect(35, 110, poster_w, poster_h)
         self._draw_arcade_poster(poster_rect)
 
         # 3. 3 NUT THE TASK LON BEN PHAI (Right Task Cards)
-        rx = 500
-        rw = 545
+        rx = poster_rect.right + 25
+        rw = self.WINDOW_WIDTH - rx - 35
         ry = 110
+        card_h = 118
+        card_gap = 12
 
         # The Task 1
         self._render_menu_task_button(
             btn_id="select_task1",
-            rect=pygame.Rect(rx, ry, rw, 118),
+            rect=pygame.Rect(rx, ry, rw, card_h),
             badge="TASK 1",
             pts="3.0 pts",
             badge_color=self.COLOR_GREEN,
@@ -313,12 +317,12 @@ class MasterDashboard:
             chips=["SAT Glucose3", "Ma hoa O(N^2)", "Greedy + Tabu", "N=4 toi 1000"],
             accent_color=self.COLOR_GREEN,
         )
-        ry += 130
+        ry += card_h + card_gap
 
         # The Task 2
         self._render_menu_task_button(
             btn_id="select_task2",
-            rect=pygame.Rect(rx, ry, rw, 118),
+            rect=pygame.Rect(rx, ry, rw, card_h),
             badge="TASK 2",
             pts="3.0 pts",
             badge_color=self.COLOR_ORANGE,
@@ -327,12 +331,12 @@ class MasterDashboard:
             chips=["Alpha-Beta & Minimax", "Boc suon chong hoa", "Rung cay Classic", "7 Ban do Arcade"],
             accent_color=self.COLOR_ORANGE,
         )
-        ry += 130
+        ry += card_h + card_gap
 
         # The Task 3
         self._render_menu_task_button(
             btn_id="select_task3",
-            rect=pygame.Rect(rx, ry, rw, 118),
+            rect=pygame.Rect(rx, ry, rw, card_h),
             badge="TASK 3",
             pts="3.0 pts",
             badge_color=self.COLOR_PURPLE,
@@ -341,7 +345,7 @@ class MasterDashboard:
             chips=["Lan truyen MAC/FC", "Bipartite Matching", "MRV & LCV", "0 Quay lui (5x5)"],
             accent_color=self.COLOR_PURPLE,
         )
-        ry += 132
+        ry += card_h + 14
 
         # 4. Thanh tac vu phu o goc duoi ben phai
         btn_w = (rw - 12) // 2
@@ -364,9 +368,10 @@ class MasterDashboard:
         pygame.draw.rect(self.screen, (40, 52, 75), rect, 2, border_radius=10)
 
         # 1. Luoi khong gian retro (Cyber Grid)
-        for gx in range(rect.left + 20, rect.right, 30):
+        step = 30
+        for gx in range(rect.left + 20, rect.right, step):
             pygame.draw.line(self.screen, (22, 28, 42), (gx, rect.top + 50), (gx, rect.bottom - 45), 1)
-        for gy in range(rect.top + 60, rect.bottom - 45, 30):
+        for gy in range(rect.top + 60, rect.bottom - 45, step):
             pygame.draw.line(self.screen, (22, 28, 42), (rect.left + 15, gy), (rect.right - 15, gy), 1)
 
         # 2. Header banner cua Poster
@@ -421,9 +426,9 @@ class MasterDashboard:
         # Xich xe
         pygame.draw.rect(self.screen, (35, 42, 54), (tank_cx - 36, tank_cy - 32, 72, 14), border_radius=3)
         pygame.draw.rect(self.screen, (35, 42, 54), (tank_cx - 36, tank_cy + 18, 72, 14), border_radius=3)
-        for rx in range(tank_cx - 32, tank_cx + 34, 12):
-            pygame.draw.line(self.screen, (80, 95, 120), (rx, tank_cy - 32), (rx, tank_cy - 19), 2)
-            pygame.draw.line(self.screen, (80, 95, 120), (rx, tank_cy + 18), (rx, tank_cy + 31), 2)
+        for rx_track in range(tank_cx - 32, tank_cx + 34, 12):
+            pygame.draw.line(self.screen, (80, 95, 120), (rx_track, tank_cy - 32), (rx_track, tank_cy - 19), 2)
+            pygame.draw.line(self.screen, (80, 95, 120), (rx_track, tank_cy + 18), (rx_track, tank_cy + 31), 2)
 
         # Than xe mau vang hoang gia
         pygame.draw.rect(self.screen, (212, 160, 15), (tank_cx - 30, tank_cy - 20, 60, 40), border_radius=4)
@@ -449,9 +454,7 @@ class MasterDashboard:
         # 5. Minh hoa Ma tran Kakuro CSP o duoi
         k_cx = rect.centerx
         k_cy = rect.top + 380
-        k_w = 190
-        k_h = 56
-        k_rect = pygame.Rect(k_cx - k_w // 2, k_cy - k_h // 2, k_w, k_h)
+        k_rect = pygame.Rect(k_cx - 95, k_cy - 28, 190, 56)
         pygame.draw.rect(self.screen, (24, 30, 44), k_rect, border_radius=4)
         pygame.draw.rect(self.screen, self.COLOR_PURPLE, k_rect, 1, border_radius=4)
 
@@ -520,10 +523,11 @@ class MasterDashboard:
 
         # 3. 4 Chip Pills
         cx = rect.left + 14
+        chip_h = 22
         for ch in chips[:4]:
             c_txt = self.font_tag.render(ch, True, (220, 230, 245))
             c_w = c_txt.get_width() + 14
-            c_box = pygame.Rect(cx, rect.top + 84, c_w, 22)
+            c_box = pygame.Rect(cx, rect.top + 84, c_w, chip_h)
             pygame.draw.rect(self.screen, (16, 20, 28), c_box, border_radius=4)
             pygame.draw.rect(self.screen, (40, 50, 68), c_box, 1, border_radius=4)
             self.screen.blit(c_txt, (cx + 7, rect.top + 87))
@@ -539,9 +543,10 @@ class MasterDashboard:
         self.buttons.clear()
 
         # 1. Header Bar
-        header_rect = pygame.Rect(0, 0, self.WINDOW_WIDTH, 80)
+        header_h = 80
+        header_rect = pygame.Rect(0, 0, self.WINDOW_WIDTH, header_h)
         pygame.draw.rect(self.screen, self.COLOR_HEADER_BG, header_rect)
-        pygame.draw.line(self.screen, self.COLOR_BORDER, (0, 80), (self.WINDOW_WIDTH, 80), 2)
+        pygame.draw.line(self.screen, self.COLOR_BORDER, (0, header_h), (self.WINDOW_WIDTH, header_h), 2)
 
         self._draw_button("back_to_menu", "< MENU CHINH", pygame.Rect(25, 24, 140, 32), bg_color=(185, 28, 28))
 
@@ -563,9 +568,12 @@ class MasterDashboard:
         b_surf = self.font_tag.render(h_badge, True, self.COLOR_GOLD)
         self.screen.blit(b_surf, (185, 48))
 
-        # 2. Bo cuc 2 cot: Cot Trai (Bieu do cot rieng lon 670px) + Cot Phai (Nut bam thao tac 345px)
-        left_rect = pygame.Rect(25, 96, 670, 560)
-        right_rect = pygame.Rect(710, 96, 345, 560)
+        # 2. Bo cuc 2 cot: Cot Trai (Bieu do cot rieng) + Cot Phai (Nut thao tac)
+        content_h = self.WINDOW_HEIGHT - 116
+        left_w = int((self.WINDOW_WIDTH - 65) * 0.65)
+        right_w = self.WINDOW_WIDTH - left_w - 65
+        left_rect = pygame.Rect(25, 96, left_w, content_h)
+        right_rect = pygame.Rect(left_rect.right + 15, 96, right_w, content_h)
 
         # Cot Trai: Bieu do cot
         self._render_task_specific_charts(task_num, left_rect)
@@ -582,9 +590,11 @@ class MasterDashboard:
         self.screen.blit(t_surf, (rect.left + 16, rect.top + 14))
         pygame.draw.line(self.screen, (45, 54, 72), (rect.left + 16, rect.top + 40), (rect.right - 16, rect.top + 40), 1)
 
-        y = rect.top + 50
         box_w = rect.width - 32
-        box_h = 145
+        gap_box = 12
+        sum_h = 54
+        box_h = (rect.height - 50 - sum_h - 20 - 2 * gap_box) // 3
+        y = rect.top + 48
 
         if task_num == 1:
             charts = [
@@ -699,7 +709,7 @@ class MasterDashboard:
             avail_w = c_box.width - 28
             b_w = 64 if n == 2 else (52 if n == 3 else 44)
             gap = (avail_w - n * b_w) / (n + 1)
-            max_h = 62
+            max_h = max(40, box_h - 76)
 
             for i, (label, val, max_v, v_str, col) in enumerate(bars):
                 bx = c_box.left + 14 + gap * (i + 1) + b_w * i
@@ -716,14 +726,14 @@ class MasterDashboard:
                 lt = self.font_tag.render(label[:16], True, self.COLOR_TEXT_MUTED)
                 self.screen.blit(lt, lt.get_rect(midtop=(b_rect.centerx, base_y + 4)))
 
-            y += box_h + 14
+            y += box_h + gap_box
 
         # Summary box o day
-        sum_box = pygame.Rect(rect.left + 16, y, box_w, 54)
+        sum_box = pygame.Rect(rect.left + 16, rect.bottom - sum_h - 12, box_w, sum_h)
         pygame.draw.rect(self.screen, (16, 20, 28), sum_box, border_radius=6)
         pygame.draw.rect(self.screen, (38, 48, 68), sum_box, 1, border_radius=6)
         if task_num == 1:
-            s_txt = "Ket luan: Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts voi Greedy+Tabu nhanh gap 22.5 lan!"
+            s_txt = "Ket luan: Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts giam so buoc tim kiem gap 22.5 lan!"
         elif task_num == 2:
             s_txt = "Ket luan: Alpha-Beta cat tia 70% so nut giu nguyen tinh toi uu. Heuristic BFS va boc suon triet tieu be tac!"
         else:
@@ -758,23 +768,24 @@ class MasterDashboard:
             l_txt = ">> MO GIAO DIEN KAKURO CSP >"
             l_col = (142, 68, 173)
         self._draw_button(launch_id, l_txt, pygame.Rect(bx, y, bw, 46), bg_color=l_col, font=self.font_btn_lg)
-        y += 58
+        y += 56
 
         # 2. NUT XEM CHI TIET THUAT TOAN (Open Modal)
         info_id = f"info_task{task_num}"
         self._draw_button(info_id, "[INFO] CHI TIET THUAT TOAN & DAC TA", pygame.Rect(bx, y, bw, 40), bg_color=(45, 54, 72))
-        y += 50
+        y += 48
 
         # 3. NUT CHAY TEST DO DAC RIENG
         self._draw_button("run_1click", "[TEST] CHAY TEST DO DAC PIPELINE", pygame.Rect(bx, y, bw, 40), bg_color=(35, 75, 125))
-        y += 50
+        y += 48
 
         # 4. NUT THONG TIN NHOM 08
         self._draw_button("team_info", "[NHOM 08] THONG TIN THANH VIEN", pygame.Rect(bx, y, bw, 40), bg_color=(75, 55, 115))
-        y += 62
+        y += 56
 
         # 5. Hop the tom tat tham so cau hinh bai toan
-        cfg_box = pygame.Rect(bx, y, bw, 220)
+        box_rem_h = rect.bottom - y - 14
+        cfg_box = pygame.Rect(bx, y, bw, max(180, box_rem_h))
         pygame.draw.rect(self.screen, (18, 22, 32), cfg_box, border_radius=6)
         pygame.draw.rect(self.screen, (38, 48, 68), cfg_box, 1, border_radius=6)
 
@@ -926,7 +937,7 @@ class MasterDashboard:
             self.screen.blit(st, (mx + 25, sy))
             sy += 22
             for b in sec_bullets:
-                bullet_rect = pygame.Rect(mx + 38, sy, mw - 70, 36)
+                bullet_rect = pygame.Rect(mx + 38, sy, mw - 70, 38)
                 self._draw_wrapped_text(f"- {b}", self.font_mini, self.COLOR_TEXT_MUTED, bullet_rect, max_lines=2, line_spacing=16)
                 sy += 34
             sy += 6
@@ -1017,9 +1028,10 @@ class MasterDashboard:
         self.buttons.clear()
 
         # Header
-        header_rect = pygame.Rect(0, 0, self.WINDOW_WIDTH, 80)
+        header_h = 80
+        header_rect = pygame.Rect(0, 0, self.WINDOW_WIDTH, header_h)
         pygame.draw.rect(self.screen, self.COLOR_HEADER_BG, header_rect)
-        pygame.draw.line(self.screen, self.COLOR_BORDER, (0, 80), (self.WINDOW_WIDTH, 80), 2)
+        pygame.draw.line(self.screen, self.COLOR_BORDER, (0, header_h), (self.WINDOW_WIDTH, header_h), 2)
 
         self._draw_button("back_to_menu", "< MENU CHINH", pygame.Rect(25, 24, 140, 32), bg_color=(185, 28, 28))
 
@@ -1030,9 +1042,10 @@ class MasterDashboard:
         t_sub = self.font_subtitle.render(f"Tong thoi gian thuc thi toan bo pipeline: {tot_time} ms  |  Trang thai: 100% PASS", True, self.COLOR_GREEN)
         self.screen.blit(t_sub, (185, 48))
 
-        col_w = 320
-        col_h = 490
-        y_top = 100
+        avail_w = self.WINDOW_WIDTH - 110
+        col_w = avail_w // 3
+        col_h = self.WINDOW_HEIGHT - 180
+        y_top = 96
 
         # The Task 1
         d1 = self.demo_results["task1"] if self.demo_results else {}
@@ -1049,7 +1062,7 @@ class MasterDashboard:
                 ("Thoi gian Min-Conflicts:", f"{d1.get('mc_time_ms', 0)} ms"),
                 ("Nghiem N-Queens N=8:", "Hop le 100% [PASS]"),
             ],
-            callout="Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts nhanh gap 22.5 lan!",
+            callout="Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts giam buoc tim kiem 22.5 lan!",
             btn_id="select_task1",
             btn_text="XEM CHI TIET TASK 1 >",
             btn_color=(39, 174, 96),
@@ -1058,7 +1071,7 @@ class MasterDashboard:
         # The Task 2
         d2 = self.demo_results["task2"] if self.demo_results else {}
         self._render_demo_card(
-            rect=pygame.Rect(380, y_top, col_w, col_h),
+            rect=pygame.Rect(35 + col_w + 20, y_top, col_w, col_h),
             badge="TASK 2: BATTLE TANK",
             badge_color=self.COLOR_ORANGE,
             title="Alpha-Beta vs Minimax Game",
@@ -1079,7 +1092,7 @@ class MasterDashboard:
         # The Task 3
         d3 = self.demo_results["task3"] if self.demo_results else {}
         self._render_demo_card(
-            rect=pygame.Rect(725, y_top, col_w, col_h),
+            rect=pygame.Rect(35 + (col_w + 20) * 2, y_top, col_w, col_h),
             badge="TASK 3: KAKURO CSP",
             badge_color=self.COLOR_PURPLE,
             title="Constraint Propagation (MAC)",
@@ -1098,9 +1111,9 @@ class MasterDashboard:
         )
 
         # Bottom Action Bar
-        y_bottom = 615
+        y_bottom = self.WINDOW_HEIGHT - 65
         pygame.draw.line(self.screen, self.COLOR_BORDER, (0, y_bottom), (self.WINDOW_WIDTH, y_bottom), 1)
-        self._draw_button("demo_rerun", "CHAY LAI 1-CLICK RUN", pygame.Rect(35, y_bottom + 10, 220, 34), bg_color=(39, 174, 96))
+        self._draw_button("demo_rerun", "CHAY LAI 1-CLICK RUN", pygame.Rect(35, y_bottom + 12, 240, 36), bg_color=(39, 174, 96))
 
     def _render_demo_card(self, rect: pygame.Rect, badge: str, badge_color, title: str, items: list[tuple[str, str]], callout: str, btn_id: str, btn_text: str, btn_color):
         mouse_pos = pygame.mouse.get_pos()
@@ -1139,7 +1152,8 @@ class MasterDashboard:
             y += 20
 
         # Callout box
-        callout_rect = pygame.Rect(rect.left + 14, y + 4, rect.width - 28, 56)
+        callout_h = max(56, rect.bottom - y - 58)
+        callout_rect = pygame.Rect(rect.left + 14, y + 4, rect.width - 28, callout_h)
         pygame.draw.rect(self.screen, (16, 20, 28), callout_rect, border_radius=6)
         pygame.draw.rect(self.screen, (40, 50, 68), callout_rect, 1, border_radius=6)
         inner_r = callout_rect.inflate(-16, -10)

@@ -1,9 +1,16 @@
+from enum import Enum
 import time
 from task2_tank.agents.base_agent import BaseAgent
 from task2_tank.entities import Action, Direction
 from task2_tank.engine import GameEngine
 from task2_tank.game_state import GameState
 from task2_tank.heuristic import TankEvaluator
+
+
+class TTFlag(Enum):
+    EXACT = "EXACT"
+    LOWERBOUND = "LOWERBOUND"
+    UPPERBOUND = "UPPERBOUND"
 
 
 class SearchAgent(BaseAgent):
@@ -25,8 +32,9 @@ class SearchAgent(BaseAgent):
         self.use_transposition = use_transposition
         self.use_move_ordering = use_move_ordering
 
-        # Bang chuyen vi (Transposition Table)
-        self.transposition_table: dict[tuple, tuple[float, int]] = {}
+        # Bang chuyen vi (Transposition Table) voi phan loai Bound theo ly thuyet Alpha-Beta
+        # key -> (score, depth, TTFlag)
+        self.transposition_table: dict[tuple, tuple[float, int, TTFlag]] = {}
         self.recent_positions: list[tuple[int, int]] = []
         self.last_action: Action | None = None
         self.last_my_hp: int | None = None
@@ -222,6 +230,7 @@ class SearchAgent(BaseAgent):
         beta: float,
     ) -> float:
         self.nodes_explored += 1
+        alpha_orig = alpha
 
         # 1. Kiem tra trang thai ket thuc (Terminal)
         if GameEngine.is_terminal(state):
@@ -247,14 +256,21 @@ class SearchAgent(BaseAgent):
                     return (my_t.hp - opp_t.hp) * 10.0 + (my_b.hp - opp_b.hp) * 20.0
                 return 0.0
 
-        # 3. Kiem tra Transposition Table
+        # 3. Kiem tra Transposition Table voi phan loai Bound theo chuan Alpha-Beta
         table_key = None
         if self.use_transposition:
             table_key = (state.state_key(), depth, player_id)
             if table_key in self.transposition_table:
-                cached_val, cached_depth = self.transposition_table[table_key]
+                cached_val, cached_depth, cached_flag = self.transposition_table[table_key]
                 if cached_depth >= depth:
-                    return cached_val
+                    if cached_flag == TTFlag.EXACT:
+                        return cached_val
+                    elif cached_flag == TTFlag.LOWERBOUND:
+                        alpha = max(alpha, cached_val)
+                    elif cached_flag == TTFlag.UPPERBOUND:
+                        beta = min(beta, cached_val)
+                    if alpha >= beta:
+                        return cached_val
 
         # 4. Duyet chu ky game tiep theo (2 plies: MAX roi MIN)
         opp_id = 1 - player_id
@@ -308,7 +324,13 @@ class SearchAgent(BaseAgent):
                     break
 
         if self.use_transposition and table_key:
-            self.transposition_table[table_key] = (max_val, depth)
+            if max_val <= alpha_orig:
+                flag = TTFlag.UPPERBOUND
+            elif max_val >= beta:
+                flag = TTFlag.LOWERBOUND
+            else:
+                flag = TTFlag.EXACT
+            self.transposition_table[table_key] = (max_val, depth, flag)
 
         return max_val
 

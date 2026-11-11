@@ -15,7 +15,7 @@ class PropagationResult:
 
 
 class ConstraintPropagator:
-    """Lop xu ly cac thuat toan lan truyen rang buoc: GAC (AC-3), Forward Checking (FC), va MAC."""
+    """Lop xu ly cac thuat toan lan truyen rang buoc: GAC (Generalized Arc Consistency), Forward Checking (FC), va MAC."""
 
     @staticmethod
     def can_match(
@@ -62,7 +62,7 @@ class ConstraintPropagator:
         initial_runs: list[Run] | None = None,
         assignment: dict[tuple[int, int], int] | None = None,
     ) -> PropagationResult:
-        """Thuat toan Generalized Arc Consistency (GAC / AC-3 cho rang buoc n-ngoi)."""
+        """Thuat toan Generalized Arc Consistency (GAC cho rang buoc n-ngoi qua Bipartite Matching)."""
         if assignment is None:
             assignment = {}
 

@@ -107,7 +107,6 @@ class KakuroGUI:
 
         self.current_config_idx = 0
 
-        # Khoi tao font chu
         font_family = "segoeui,tahoma,arial,consolas"
         self.font_main = pygame.font.SysFont(font_family, 26, bold=True)
         self.font_clue = pygame.font.SysFont(font_family, 13, bold=True)
@@ -131,6 +130,8 @@ class KakuroGUI:
     def _load_current_puzzle(self):
         puzzle_path = self.available_puzzles[self.current_puzzle_idx][1]
         self.puzzle = KakuroPuzzle.from_file(puzzle_path)
+
+        self.PANEL_WIDTH = 400
 
         # Chon kich thuoc o phu hop voi kich thuoc ma tran
         max_dim = max(self.puzzle.rows, self.puzzle.cols)
@@ -461,8 +462,6 @@ class KakuroGUI:
 
         # --- SECTION 0: HEADER & NUT QUAY VE MENU ---
         self._draw_button("menu", "< MENU CHINH", pygame.Rect(px, y, 120, 28), bg_color=(185, 28, 28))
-        tag_surf = self.font_tag.render("AI PROJECT - TASK 3", True, (142, 68, 173))
-        self.screen.blit(tag_surf, (px + pw - tag_surf.get_width(), y + 6))
         y += 34
 
         t_title = self.font_title.render("KAKURO CSP SOLVER", True, (255, 255, 255))
