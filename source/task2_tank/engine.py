@@ -219,5 +219,9 @@ class GameEngine:
                     continue
                 entity = state.get_entity_at(b.r, b.c)
                 if entity is not None and entity.is_alive:
+                    # Bao ve can cu dong minh: Dan cua mot phe khong gay sat thuong len can cu cua chinh phe do
+                    if isinstance(entity, Base) and entity.player_id == b.owner_id:
+                        b.is_active = False
+                        continue
                     entity.take_damage(1)
                     b.is_active = False

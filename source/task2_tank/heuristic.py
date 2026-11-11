@@ -125,10 +125,21 @@ class TankEvaluator:
         # Gioi han heuristic trong khoang [-899, 899] de khong lan át trang thai thang/thua tuyet doi (1000)
         return max(-899.0, min(899.0, score))
 
-    @staticmethod
-    def has_useful_fire_target(state: GameState, player_id: int) -> bool:
+    @classmethod
+    def would_hit_own_base(cls, state: GameState, player_id: int) -> bool:
+        """Kiem tra xem huong nong phao hien tai cua tank co bay thang vao can cu nha minh hay khong."""
+        tank = state.tanks.get(player_id)
+        my_base = state.bases.get(player_id)
+        if not tank or not tank.is_alive or not my_base or not my_base.is_alive:
+            return False
+        return cls._has_line_of_fire(state, tank.pos, tank.direction, my_base.pos)
+
+    @classmethod
+    def has_useful_fire_target(cls, state: GameState, player_id: int) -> bool:
         """Kiem tra xem huong nong phao hien tai co muc tieu huu ich (Base dich, Tank dich, hoac Tuong gach) truoc khi cham tuong thep/bien hay khong."""
         if state.has_active_bullet(player_id):
+            return False
+        if cls.would_hit_own_base(state, player_id):
             return False
         tank = state.tanks.get(player_id)
         if not tank or not tank.is_alive:

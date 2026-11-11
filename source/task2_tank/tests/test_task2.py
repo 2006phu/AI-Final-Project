@@ -5,6 +5,7 @@ from task2_tank.agents.search_agent import SearchAgent
 from task2_tank.engine import GameEngine
 from task2_tank.entities import Action, Direction, Tank, Base, Wall, Bullet
 from task2_tank.game_state import GameState
+from task2_tank.heuristic import TankEvaluator
 from task2_tank.gui import discover_custom_agents
 
 
@@ -215,6 +216,41 @@ def test_agents_can_rotate_toward_destructible_brick_wall():
     assert ordered[0] == Action.MOVE_UP
     act_ab = search_ab.get_action(state, player_id=0)
     assert act_ab == Action.MOVE_UP
+
+
+def test_friendly_base_fire_protection_and_agent_safety():
+    state = GameState(5, 5)
+    # Tank 0 o vi tri (3, 2) dang quay mat xuong duoi (Direction.DOWN), ngay phia truoc la Can cu Base 0 tai (4, 2)
+    state.tanks[0] = Tank(0, r=3, c=2, direction=Direction.DOWN)
+    state.tanks[1] = Tank(1, r=0, c=0, direction=Direction.DOWN)
+    state.bases[0] = Base(0, r=4, c=2)
+    state.bases[1] = Base(1, r=0, c=4)
+
+    # 1. Ham would_hit_own_base phai phat hien huong ban vao can cu nha minh
+    assert TankEvaluator.would_hit_own_base(state, player_id=0) is True
+    assert TankEvaluator.would_hit_own_base(state, player_id=1) is False
+
+    # 2. Cac SearchAgent (Minimax, Alpha-Beta, Heuristic) tuyet doi khong duoc chon hanh dong FIRE
+    agents = [
+        SearchAgent.create_minimax(depth=2),
+        SearchAgent.create_alpha_beta(depth=2),
+        SearchAgent.create_heuristic_minimax(depth=2),
+        SearchAgent.create_heuristic_alpha_beta(depth=2),
+    ]
+    for agent in agents:
+        act = agent.get_action(state, player_id=0)
+        assert act != Action.FIRE, f"Agent {agent.name} khong duoc phep chon FIRE khi ngam vao can cu nha minh!"
+
+    # 3. Kiem tra Friendly Fire tai Engine: Neu dan cua Player 0 bay vao Base 0 thi Base 0 khong bi mat mau
+    s_friendly = GameEngine.step(state, Action.FIRE, Action.STAY)
+    assert s_friendly.bases[0].hp == Base.INITIAL_HP, "Base nha minh phai mien nhiem voi dan cua dong minh!"
+
+    # 4. Neu dan cua Player 1 bay vao Base 0 thi Base 0 phai bi tru mau binh thuong
+    s_enemy_fire = state.clone()
+    s_enemy_fire.bullets.append(Bullet(owner_id=1, r=3, c=2, direction=Direction.DOWN))
+    s_hit = GameEngine.step(s_enemy_fire, Action.STAY, Action.STAY)
+    assert s_hit.bases[0].hp == Base.INITIAL_HP - 1, "Base phai nhan sat thuong tu dan cua ke thu!"
+
 
 
 

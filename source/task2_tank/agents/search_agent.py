@@ -101,6 +101,10 @@ class SearchAgent(BaseAgent):
                 self.recent_positions.pop(0)
 
         legal_actions = GameEngine.get_legal_actions(state, player_id)
+        # Tuyet doi khong tu ban vao can cu nha minh
+        if Action.FIRE in legal_actions and TankEvaluator.would_hit_own_base(state, player_id):
+            legal_actions = [a for a in legal_actions if a != Action.FIRE]
+
         if len(legal_actions) == 1:
             self.last_action = legal_actions[0]
             return legal_actions[0]
@@ -257,9 +261,14 @@ class SearchAgent(BaseAgent):
         max_actions = self._order_actions(
             state, GameEngine.get_legal_actions(state, player_id), player_id
         )
+        if Action.FIRE in max_actions and TankEvaluator.would_hit_own_base(state, player_id):
+            max_actions = [a for a in max_actions if a != Action.FIRE]
+
         opp_actions = self._order_actions(
             state, GameEngine.get_legal_actions(state, opp_id), opp_id
         )
+        if Action.FIRE in opp_actions and TankEvaluator.would_hit_own_base(state, opp_id):
+            opp_actions = [a for a in opp_actions if a != Action.FIRE]
 
         max_val = float("-inf")
         for a_max in max_actions:
@@ -320,6 +329,8 @@ class SearchAgent(BaseAgent):
                 if action == Action.STAY:
                     return -70
                 if action == Action.FIRE:
+                    if TankEvaluator.would_hit_own_base(state, player_id):
+                        return -99999
                     return -120 if state.has_active_bullet(player_id) else 40
                 d = action.to_direction()
                 if not d:
@@ -367,6 +378,10 @@ class SearchAgent(BaseAgent):
 
         def score_action(action: Action) -> int:
             if action == Action.FIRE:
+                # Tuyet doi khong tu ban vao can cu nha minh
+                if TankEvaluator.would_hit_own_base(state, player_id):
+                    return -99999
+
                 # Neu xe da co vien dan dang bay tren ban do: Khong the ban tiep, phai di chuyen!
                 if state.has_active_bullet(player_id):
                     return -120
