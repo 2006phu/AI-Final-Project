@@ -81,12 +81,12 @@ class GameState:
             )
         )
 
-        # Chi luu tuong gach bi thay doi mau de toi uu toc do bam
+        # Luu trang thai tat ca tuong gach con song de phan biet tuong nguyen ven (hp=3) voi tuong da pha huy (hp=0)
         wall_info = tuple(
             sorted(
                 (pos, w.hp)
                 for pos, w in self.walls.items()
-                if w.is_alive and not w.is_steel and w.hp < w.max_hp
+                if w.is_alive and not w.is_steel
             )
         )
 

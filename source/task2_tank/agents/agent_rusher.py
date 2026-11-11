@@ -1,8 +1,7 @@
 import random
-from collections import deque
 from task2_tank.agents.base_agent import BaseAgent
 from task2_tank.engine import GameEngine
-from task2_tank.entities import Action, Direction
+from task2_tank.entities import Action
 from task2_tank.game_state import GameState
 from task2_tank.heuristic import TankEvaluator
 
@@ -37,7 +36,7 @@ class RusherAgent(BaseAgent):
         best_actions = []
 
         for a_max in legal_actions:
-            # 1. Phat truc tiep cac hanh dong dam vao tuong hoac dung yen
+            # 1. Phat truc tiep cac hanh dong dam vao tuong thep hoac lap lai dam tuong gach
             d = a_max.to_direction()
             if d:
                 cand = (tank.r + d.dr, tank.c + d.dc)
@@ -45,7 +44,8 @@ class RusherAgent(BaseAgent):
                     continue
                 w = state.walls.get(cand)
                 if w and w.is_alive:
-                    continue  # Khong bao gio di vao tuong
+                    if w.is_steel or tank.direction == d:
+                        continue  # Bo qua tuong thep hoac khi da xoay mat san vao tuong gach
                 b = state.bases.get(0) if state.bases.get(0) and state.bases.get(0).pos == cand else None
                 if b or (state.bases.get(1) and state.bases.get(1).pos == cand):
                     continue
@@ -61,6 +61,8 @@ class RusherAgent(BaseAgent):
                 score = self._eval_rusher(next_s, player_id)
                 if a_max == Action.STAY:
                     score -= 40.0
+                elif a_max == Action.FIRE and not TankEvaluator.has_useful_fire_target(state, player_id):
+                    score -= 45.0
                 if score < min_val:
                     min_val = score
 
@@ -112,5 +114,11 @@ class RusherAgent(BaseAgent):
             dist_tank_to_opp = abs(my_tank.r - opp_base.r) + abs(my_tank.c - opp_base.c)
             if dist_wall_to_opp <= dist_tank_to_opp:
                 score += 40.0  # Chi khuyen khich pha tuong mo duong tien cong
+
+        # 5. Thuong khi dan cua minh dang lao thang vao dich hoac can cu dich
+        for b in state.bullets:
+            if b.is_active and b.owner_id == player_id:
+                if (opp_tank and TankEvaluator._bullet_threatens_target(state, b, opp_tank.pos)) or TankEvaluator._bullet_threatens_target(state, b, opp_base.pos):
+                    score += 65.0
 
         return max(-899.0, min(899.0, score))

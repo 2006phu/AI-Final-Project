@@ -38,6 +38,28 @@ def run_headless_solver(puzzle_path: str, strategy: str, use_mrv: bool, use_lcv:
     print("=" * 60)
 
 
+def run_comparison(puzzle_path: str):
+    print("=" * 72)
+    print(f" SO SANH CAC CHIEN LUOC GIAI KAKURO CSP: {os.path.basename(puzzle_path)}")
+    print("=" * 72)
+    puzzle = KakuroPuzzle.from_file(puzzle_path)
+    configs = [
+        ("Pure BT + MRV", "none", True, False),
+        ("BT + FC + MRV", "fc", True, False),
+        ("BT + MAC + MRV", "mac", True, False),
+        ("BT + MAC + MRV + LCV", "mac", True, True),
+    ]
+    print(f"{'Chien luoc':<24} | {'Solved':<8} | {'Nodes':>8} | {'Backtracks':>10} | {'Prunings':>8} | {'Time (ms)':>9}")
+    print("-" * 72)
+    for label, strat, mrv, lcv in configs:
+        solver = BacktrackingSolver(puzzle, strategy=strat, use_mrv=mrv, use_lcv=lcv)
+        res = solver.solve()
+        valid, _ = puzzle.is_solution_valid(res.solution) if res.is_solved else (False, "")
+        status = "PASS" if (res.is_solved and valid) else "FAIL"
+        print(f"{label:<24} | {status:<8} | {res.nodes_explored:>8} | {res.backtracks:>10} | {res.prunings_count:>8} | {res.solve_time_ms:>9.2f}")
+    print("=" * 72)
+
+
 def main():
     base_dir = os.path.dirname(__file__)
     puzzles_dir = os.path.join(base_dir, "puzzles")
@@ -45,23 +67,24 @@ def main():
 
     parser = argparse.ArgumentParser(description="Kakuro CSP Solver & Visualizer (AI Final Project)")
     parser.add_argument("--puzzle", type=str, default=default_puzzle, help="Duong dan file de Kakuro (.txt)")
-    parser.add_argument("--strategy", type=str, default="mac", choices=["mac", "fc", "none"], help="Chien luoc lan truyen: mac, fc, none")
+    parser.add_argument("--strategy", type=str, default=None, choices=["mac", "fc", "none"], help="Chien luoc lan truyen: mac, fc, none")
     parser.add_argument("--no-mrv", action="store_true", help="Tat heuristic MRV + Degree")
     parser.add_argument("--no-lcv", action="store_true", help="Tat heuristic LCV")
     parser.add_argument("--headless", action="store_true", help="Chay console mode khong mo Pygame GUI")
+    parser.add_argument("--compare", action="store_true", help="So sanh cac chien luoc CSP tren console")
     args = parser.parse_args()
 
-    if args.headless:
+    if args.compare:
+        run_comparison(args.puzzle)
+    elif args.headless or args.strategy is not None:
         run_headless_solver(
             args.puzzle,
-            strategy=args.strategy,
+            strategy=args.strategy or "mac",
             use_mrv=not args.no_mrv,
             use_lcv=not args.no_lcv,
         )
     else:
         # Khoi dong GUI truc quan: Chi can 1 lenh chay 'python source/task3_kakuro/main.py'
-        # Toan bo thao tac chon de, chon thuat toan, Play/Pause, Step, Reset, Chinh toc do
-        # deu duoc thao tac 100% truc tiep tren man hinh GUI bang chuot!
         gui = KakuroGUI(puzzles_dir, initial_puzzle_path=args.puzzle)
         gui.run()
 

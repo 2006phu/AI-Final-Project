@@ -159,19 +159,13 @@ class GameEngine:
         spawn_r = tank.r + tank.direction.dr
         spawn_c = tank.c + tank.direction.dc
 
-        # Neu diem xuat phat cua dan vuot ra ngoai ban do
+        # Neu huong ban quay ra ngoai bien ban do thi vien dan tieu tan ngay
         if not state.is_inside(spawn_r, spawn_c):
             return
 
-        bullet = Bullet(player_id, spawn_r, spawn_c, tank.direction)
-
-        # Kiem tra va cham ngay tai diem spawn
-        target_entity = state.get_entity_at(spawn_r, spawn_c)
-        if target_entity is not None and target_entity.is_alive:
-            target_entity.take_damage(1)
-            bullet.is_active = False
-        else:
-            state.bullets.append(bullet)
+        # Khoi tao dan tai vi tri nong phao; _resolve_bullet_flights se cho dan tien dung 3 o (cell-by-cell)
+        bullet = Bullet(player_id, tank.r, tank.c, tank.direction)
+        state.bullets.append(bullet)
 
     @classmethod
     def _resolve_bullet_flights(cls, state: GameState):

@@ -1,8 +1,7 @@
 import random
-from collections import deque
 from task2_tank.agents.base_agent import BaseAgent
 from task2_tank.engine import GameEngine
-from task2_tank.entities import Action, Direction
+from task2_tank.entities import Action
 from task2_tank.game_state import GameState
 from task2_tank.heuristic import TankEvaluator
 
@@ -44,7 +43,8 @@ class FlankerAgent(BaseAgent):
                     continue
                 w = state.walls.get(cand)
                 if w and w.is_alive:
-                    continue  # Khong di vao tuong
+                    if w.is_steel or tank.direction == d:
+                        continue  # Bo qua tuong thep hoac khi da xoay mat san vao tuong gach
                 if (state.bases.get(0) and state.bases.get(0).pos == cand) or (state.bases.get(1) and state.bases.get(1).pos == cand):
                     continue
 
@@ -57,6 +57,10 @@ class FlankerAgent(BaseAgent):
                     a_min if player_id == 0 else a_max,
                 )
                 score = self._eval_flanker(next_s, player_id)
+                if a_max == Action.STAY:
+                    score -= 30.0
+                elif a_max == Action.FIRE and not TankEvaluator.has_useful_fire_target(state, player_id):
+                    score -= 35.0
                 if score < min_val:
                     min_val = score
             if min_val > best_score:
@@ -93,21 +97,35 @@ class FlankerAgent(BaseAgent):
         # 2. Thuong cuc lon cho Boc suon (Minh ngam duoc dich ma dich khong ngam duoc minh)
         my_aim_opp = opp_tank and TankEvaluator._has_line_of_fire(state, my_tank.pos, my_tank.direction, opp_tank.pos)
         opp_aim_me = opp_tank and TankEvaluator._has_line_of_fire(state, opp_tank.pos, opp_tank.direction, my_tank.pos)
+        my_aim_base = TankEvaluator._has_line_of_fire(state, my_tank.pos, my_tank.direction, opp_base.pos)
 
+        if my_aim_base:
+            score += 90.0
         if my_aim_opp and not opp_aim_me:
             score += 120.0  # Hoan hao! Ban len tu goc khuat
 
         if opp_aim_me:
             score -= 80.0  # Nguy hiem! Dang bi dich ngam, phai ne ngay!
 
-        # 3. Ne duong truc dien voi dich
+        # 3. Thuong khi dan cua minh dang lao thang vao dich hoac can cu dich, phat khi bi dan dich de doa
+        for b in state.bullets:
+            if not b.is_active:
+                continue
+            if b.owner_id == player_id:
+                if (opp_tank and TankEvaluator._bullet_threatens_target(state, b, opp_tank.pos)) or TankEvaluator._bullet_threatens_target(state, b, opp_base.pos):
+                    score += 65.0
+            else:
+                if TankEvaluator._bullet_threatens_target(state, b, my_tank.pos) or (my_base and TankEvaluator._bullet_threatens_target(state, b, my_base.pos)):
+                    score -= 90.0
+
+        # 4. Ne duong truc dien voi dich
         if opp_tank and opp_tank.is_alive:
             # Phat khi dung cung hang hoac cung cot voi xe dich ma khong ban duoc
             if (my_tank.r == opp_tank.r or my_tank.c == opp_tank.c) and not my_aim_opp:
                 score -= 30.0
 
-        # 4. Tien ve Base dich theo duong vong
+        # 5. Tien ve Base dich theo duong vong
         bfs_map = TankEvaluator.get_bfs_dist_map(state, opp_base.pos)
-        score -= bfs_map.get(my_tank.pos, 30) * 4.0
+        score -= bfs_map.get(my_tank.pos, 30) * 8.0
 
         return max(-899.0, min(899.0, score))

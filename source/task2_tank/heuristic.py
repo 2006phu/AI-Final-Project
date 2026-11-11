@@ -41,7 +41,7 @@ class TankEvaluator:
                     w = state.walls.get((nr, nc))
                     if w and w.is_alive and w.is_steel:
                         continue  # Tuong thep khong the di qua
-                    step_cost = 4 if (w and w.is_alive) else 1
+                    step_cost = (1 + w.hp) if (w and w.is_alive) else 1
                     new_d = d + step_cost
                     if (nr, nc) not in dist or new_d < dist[(nr, nc)]:
                         dist[(nr, nc)] = new_d
@@ -126,6 +126,35 @@ class TankEvaluator:
         return max(-899.0, min(899.0, score))
 
     @staticmethod
+    def has_useful_fire_target(state: GameState, player_id: int) -> bool:
+        """Kiem tra xem huong nong phao hien tai co muc tieu huu ich (Base dich, Tank dich, hoac Tuong gach) truoc khi cham tuong thep/bien hay khong."""
+        if state.has_active_bullet(player_id):
+            return False
+        tank = state.tanks.get(player_id)
+        if not tank or not tank.is_alive:
+            return False
+        opp_base = state.bases.get(1 - player_id)
+        opp_tank = state.tanks.get(1 - player_id)
+        r, c = tank.pos
+        dr, dc = tank.direction.dr, tank.direction.dc
+        while True:
+            r += dr
+            c += dc
+            if not state.is_inside(r, c):
+                return False
+            if opp_base and opp_base.is_alive and (r, c) == opp_base.pos:
+                return True
+            if opp_tank and opp_tank.is_alive and abs(r - opp_tank.r) + abs(c - opp_tank.c) <= 1:
+                return True
+            w = state.walls.get((r, c))
+            if w and w.is_alive:
+                if w.is_steel or not opp_base:
+                    return False
+                dist_w = abs(r - opp_base.r) + abs(c - opp_base.c)
+                dist_t = abs(tank.r - opp_base.r) + abs(tank.c - opp_base.c)
+                return dist_w < dist_t
+
+    @staticmethod
     def _has_line_of_fire(
         state: GameState,
         start_pos: tuple[int, int],
@@ -163,8 +192,8 @@ class TankEvaluator:
                 if w and w.is_alive:
                     return False
                 c_curr += dc
-            # Chi thuc su de doa nguy cap neu cu ly cuc gan (<= 2 o, khong kip ne tranh)
-            return abs(tc - bc) <= 2
+            # De doa truc tiep trong tam dan bay (<= 4 o)
+            return abs(tc - bc) <= 4
         else:
             if bc != tc or (tr - br) * dr <= 0:
                 return False
@@ -174,5 +203,5 @@ class TankEvaluator:
                 if w and w.is_alive:
                     return False
                 r_curr += dr
-            # Chi thuc su de doa nguy cap neu cu ly cuc gan (<= 2 o, khong kip ne tranh)
-            return abs(tr - br) <= 2
+            # De doa truc tiep trong tam dan bay (<= 4 o)
+            return abs(tr - br) <= 4

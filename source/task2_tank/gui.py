@@ -5,6 +5,10 @@ import os
 import random
 import sys
 import pygame
+
+# Dam bao import duoc task2_tank khi chay truc tiep file gui.py
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from task2_tank.agents.base_agent import BaseAgent
 from task2_tank.agents.human_agent import HumanAgent
 from task2_tank.agents.random_agent import RandomAgent
@@ -22,13 +26,18 @@ if sys.platform == "win32":
         pass
 
 
+CORE_AGENT_FILES = {"base_agent.py", "search_agent.py", "random_agent.py", "human_agent.py"}
+
+
 def discover_custom_agents(agents_dir: str) -> dict[str, type]:
-    """Quét động các file trong agents_dir và trả về dict[tên_lớp, class]."""
+    """Quet dong cac file trong agents_dir va tra ve dict[ten_lop, class]."""
     custom_agents = {}
     if os.path.exists(agents_dir):
-        for fname in os.listdir(agents_dir):
-            if fname.endswith(".py") and not fname.startswith("__"):
+        for fname in sorted(os.listdir(agents_dir)):
+            if fname.endswith(".py") and not fname.startswith("__") and fname not in CORE_AGENT_FILES:
                 filepath = os.path.join(agents_dir, fname)
+                if not os.path.isfile(filepath):
+                    continue
                 mod_name = f"dynamic_agent_{fname[:-3]}"
                 try:
                     spec = importlib.util.spec_from_file_location(mod_name, filepath)
@@ -149,8 +158,10 @@ class TankBattleGUI:
                     self.current_p2_idx = idx
                     break
 
-        self.p1_agent = self.available_agents[self.current_p1_idx][1]()
-        self.p2_agent = self.available_agents[self.current_p2_idx][1]()
+        self.logs: list[str] = ["Battle City Engine San Sang! Nhan [PLAY] de bat dau tran chien."]
+
+        self.p1_agent = self._instantiate_agent(self.current_p1_idx)
+        self.p2_agent = self._instantiate_agent(self.current_p2_idx)
 
         # Nap ban do dau tien
         self._load_current_map()
@@ -167,7 +178,6 @@ class TankBattleGUI:
         self.is_running = True
         self.is_paused = True
         self.fps = self.FPS_DEFAULT
-        self.logs: list[str] = ["Battle City Engine San Sang! Nhan [PLAY] de bat dau tran chien."]
 
         self.last_a0 = Action.STAY
         self.last_a1 = Action.STAY
@@ -180,6 +190,14 @@ class TankBattleGUI:
 
         # Danh sach nut bam UI tuong tac tren man hinh
         self.buttons = {}
+
+    def _instantiate_agent(self, idx: int) -> BaseAgent:
+        label, factory = self.available_agents[idx]
+        try:
+            return factory()
+        except Exception as e:
+            self.add_log(f"Loi khoi tao {label}: {e} -> dung RandomAgent")
+            return RandomAgent()
 
     def _load_current_map(self):
         map_path = self.available_maps[self.current_map_idx][1]
@@ -216,8 +234,8 @@ class TankBattleGUI:
 
     def restart_game(self):
         self._load_current_map()
-        self.p1_agent = self.available_agents[self.current_p1_idx][1]()
-        self.p2_agent = self.available_agents[self.current_p2_idx][1]()
+        self.p1_agent = self._instantiate_agent(self.current_p1_idx)
+        self.p2_agent = self._instantiate_agent(self.current_p2_idx)
         self.is_paused = True
         self.last_a0 = Action.STAY
         self.last_a1 = Action.STAY
@@ -373,22 +391,22 @@ class TankBattleGUI:
 
         elif btn_id == "p1_prev":
             self.current_p1_idx = (self.current_p1_idx - 1) % len(self.available_agents)
-            self.p1_agent = self.available_agents[self.current_p1_idx][1]()
+            self.p1_agent = self._instantiate_agent(self.current_p1_idx)
             self.add_log(f"P1 doi thanh: {self.available_agents[self.current_p1_idx][0]}")
 
         elif btn_id == "p1_next":
             self.current_p1_idx = (self.current_p1_idx + 1) % len(self.available_agents)
-            self.p1_agent = self.available_agents[self.current_p1_idx][1]()
+            self.p1_agent = self._instantiate_agent(self.current_p1_idx)
             self.add_log(f"P1 doi thanh: {self.available_agents[self.current_p1_idx][0]}")
 
         elif btn_id == "p2_prev":
             self.current_p2_idx = (self.current_p2_idx - 1) % len(self.available_agents)
-            self.p2_agent = self.available_agents[self.current_p2_idx][1]()
+            self.p2_agent = self._instantiate_agent(self.current_p2_idx)
             self.add_log(f"P2 doi thanh: {self.available_agents[self.current_p2_idx][0]}")
 
         elif btn_id == "p2_next":
             self.current_p2_idx = (self.current_p2_idx + 1) % len(self.available_agents)
-            self.p2_agent = self.available_agents[self.current_p2_idx][1]()
+            self.p2_agent = self._instantiate_agent(self.current_p2_idx)
             self.add_log(f"P2 doi thanh: {self.available_agents[self.current_p2_idx][0]}")
 
     def _render(self):
@@ -864,17 +882,17 @@ class TankBattleGUI:
         y += 20
 
         max_bar = panel_w - 36
-        # Alpha-Beta (22 nodes)
-        ab_w = int(max_bar * (22 / 72))
+        # Alpha-Beta (11 nodes)
+        ab_w = int(max_bar * (11 / 36))
         pygame.draw.rect(self.screen, (38, 44, 56), (panel_x + 18, y, max_bar, 10), border_radius=2)
         pygame.draw.rect(self.screen, self.COLOR_P1, (panel_x + 18, y, ab_w, 10), border_radius=2)
-        self.screen.blit(self.font_mini.render("Alpha-Beta: 22 nodes (Cat tia ~70% nut)", True, self.COLOR_P1), (panel_x + 18, y + 12))
+        self.screen.blit(self.font_mini.render("Alpha-Beta: 11 nodes (Cat tia ~70% nut)", True, self.COLOR_P1), (panel_x + 18, y + 12))
         y += 26
 
-        # Minimax (72 nodes)
+        # Minimax (36 nodes)
         pygame.draw.rect(self.screen, (38, 44, 56), (panel_x + 18, y, max_bar, 10), border_radius=2)
         pygame.draw.rect(self.screen, self.COLOR_P2, (panel_x + 18, y, max_bar, 10), border_radius=2)
-        self.screen.blit(self.font_mini.render("Minimax: 72 nodes (Duyet can toan bo)", True, self.COLOR_TEXT_MUTED), (panel_x + 18, y + 12))
+        self.screen.blit(self.font_mini.render("Minimax: 36 nodes (Duyet can toan bo)", True, self.COLOR_TEXT_MUTED), (panel_x + 18, y + 12))
         y += 28
 
         # 7. NHAT KY LOGS CHIEN TRUONG
@@ -894,3 +912,13 @@ class TankBattleGUI:
                 color = self.COLOR_GOLD
             self.screen.blit(self.font_mini.render(line[:54], True, color), (log_box.left + 8, log_y))
             log_y += 18
+
+
+if __name__ == "__main__":
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    gui = TankBattleGUI(
+        maps_dir=os.path.join(base_dir, "maps"),
+        agents_dir=os.path.join(base_dir, "agents"),
+    )
+    gui.run()
+    pygame.quit()

@@ -141,6 +141,7 @@ def build_submission_zips():
             assert f"{prefix}/report.pdf" in names
             assert f"{prefix}/demo.txt" in names
             assert f"{prefix}/source/README.md" in names
+            assert f"{prefix}/source/requirements.txt" in names
             assert f"{prefix}/source/main.py" in names
             print(f"  [PASS] {os.path.basename(z_path)}: {len(names)} tap tin ben trong, toan ven 100%.")
 

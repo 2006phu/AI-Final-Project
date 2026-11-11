@@ -10,6 +10,8 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from task3_kakuro.csp import KakuroCSP
 from task3_kakuro.propagation import ConstraintPropagator
 from task3_kakuro.puzzle import KakuroPuzzle, CellType
@@ -609,7 +611,7 @@ class KakuroGUI:
         col_data = [
             ("BT+MAC", 12, 50, "12 n", (16, 185, 129)),
             ("BT+FC", 13, 50, "13 n", (56, 189, 248)),
-            ("Pure+MRV", 71, 100, "71 n", (251, 191, 36)),
+            ("Pure+MRV", 74, 100, "74 n", (251, 191, 36)),
             ("Pure BT", 100, 100, "6.5k", (239, 68, 68)),
         ]
         num_c = len(col_data)
@@ -664,3 +666,11 @@ class KakuroGUI:
                 log_line = self.font_panel.render(f"> {line[:46]}", True, (220, 230, 245))
                 self.screen.blit(log_line, (px + 12, ly))
                 ly += 16
+
+
+if __name__ == "__main__":
+    puzzles_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "puzzles")
+    gui = KakuroGUI(puzzles_dir)
+    gui.run()
+    pygame.quit()
+

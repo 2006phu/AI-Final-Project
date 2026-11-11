@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import webbrowser
 import pygame
 
 # Bat High-DPI Awareness tren Windows de toan bo giao dien sac net, khong bi mo nho
@@ -199,25 +198,14 @@ class MasterDashboard:
         elif btn_id == "team_info":
             self.active_modal = "team"
 
-        # 5. Mo so do kien truc HTML
-        elif btn_id == "open_arch":
-            candidates = [
-                os.path.join(SOURCE_DIR, "architecture.html"),
-                os.path.join(os.path.dirname(SOURCE_DIR), "architecture.html"),
-            ]
-            for arch_file in candidates:
-                if os.path.exists(arch_file):
-                    webbrowser.open("file://" + os.path.abspath(arch_file))
-                    break
-
-        # 6. Chay test do dac
+        # 5. Chay test do dac
         elif btn_id == "run_1click":
             self._execute_1click_demo()
             self.current_view = "demo"
         elif btn_id == "demo_rerun":
             self._execute_1click_demo()
 
-        # 7. Quay lai menu chinh
+        # 6. Quay lai menu chinh
         elif btn_id == "back_to_menu":
             self.current_view = "menu"
 
@@ -308,12 +296,12 @@ class MasterDashboard:
         poster_rect = pygame.Rect(35, 110, 440, 500)
         self._draw_arcade_poster(poster_rect)
 
-        # 3. 3 NUT THẺ TASK LỚN BÊN PHẢI (Right Task Cards)
+        # 3. 3 NUT THE TASK LON BEN PHAI (Right Task Cards)
         rx = 500
         rw = 545
         ry = 110
 
-        # Thẻ Task 1
+        # The Task 1
         self._render_menu_task_button(
             btn_id="select_task1",
             rect=pygame.Rect(rx, ry, rw, 118),
@@ -322,12 +310,12 @@ class MasterDashboard:
             badge_color=self.COLOR_GREEN,
             title="1. N-QUEENS PUZZLE",
             subtitle="Logic Menh de CNF (Sequential Counter) & Heuristic Min-Conflicts",
-            chips=["SAT Glucose3", "Mã hoá O(N^2)", "Greedy + Tabu", "N=4 tới 1000"],
+            chips=["SAT Glucose3", "Ma hoa O(N^2)", "Greedy + Tabu", "N=4 toi 1000"],
             accent_color=self.COLOR_GREEN,
         )
         ry += 130
 
-        # Thẻ Task 2
+        # The Task 2
         self._render_menu_task_button(
             btn_id="select_task2",
             rect=pygame.Rect(rx, ry, rw, 118),
@@ -336,12 +324,12 @@ class MasterDashboard:
             badge_color=self.COLOR_ORANGE,
             title="2. BATTLE TANK ARENA",
             subtitle="Zero-Sum Game, Tim kiem doi khang & 4 Chien thuat AI Flanking",
-            chips=["Alpha-Beta & Minimax", "Boc suon chong hoa", "Rung cay Classic", "6 Ban do Arcade"],
+            chips=["Alpha-Beta & Minimax", "Boc suon chong hoa", "Rung cay Classic", "7 Ban do Arcade"],
             accent_color=self.COLOR_ORANGE,
         )
         ry += 130
 
-        # Thẻ Task 3
+        # The Task 3
         self._render_menu_task_button(
             btn_id="select_task3",
             rect=pygame.Rect(rx, ry, rw, 118),
@@ -356,10 +344,9 @@ class MasterDashboard:
         ry += 132
 
         # 4. Thanh tac vu phu o goc duoi ben phai
-        btn_w = (rw - 20) // 3
-        self._draw_button("run_1click", "⚡ 1-CLICK TEST", pygame.Rect(rx, ry, btn_w, 34), bg_color=(39, 174, 96))
-        self._draw_button("open_arch", "🏛 SƠ ĐỒ HTML", pygame.Rect(rx + btn_w + 10, ry, btn_w, 34), bg_color=(125, 60, 150))
-        self._draw_button("team_info", "👥 NHÓM 08", pygame.Rect(rx + (btn_w + 10) * 2, ry, btn_w, 34), bg_color=(55, 65, 85))
+        btn_w = (rw - 12) // 2
+        self._draw_button("run_1click", "[TEST] 1-CLICK PIPELINE", pygame.Rect(rx, ry, btn_w, 34), bg_color=(39, 174, 96))
+        self._draw_button("team_info", "[INFO] THONG TIN NHOM 08", pygame.Rect(rx + btn_w + 12, ry, btn_w, 34), bg_color=(55, 65, 85))
 
         # 5. Footer duoi cung
         footer_y = self.WINDOW_HEIGHT - 38
@@ -386,7 +373,7 @@ class MasterDashboard:
         p_hdr = pygame.Rect(rect.left + 14, rect.top + 14, rect.width - 28, 32)
         pygame.draw.rect(self.screen, (26, 34, 50), p_hdr, border_radius=6)
         pygame.draw.rect(self.screen, (56, 189, 248), p_hdr, 1, border_radius=6)
-        p_txt = self.font_arcade.render("★ AI RETRO ARCADE ARENA ★", True, (56, 189, 248))
+        p_txt = self.font_arcade.render("* AI RETRO ARCADE ARENA *", True, (56, 189, 248))
         self.screen.blit(p_txt, p_txt.get_rect(center=p_hdr.center))
 
         # 3. Minh hoa Vuong mien Hoang gia (Task 1: N-Queens) o tren
@@ -497,8 +484,7 @@ class MasterDashboard:
         lbl_k = self.font_tag.render("KAKURO CSP & MAC PROPAGATION", True, self.COLOR_PURPLE)
         self.screen.blit(lbl_k, lbl_k.get_rect(center=(k_cx, k_cy + 40)))
 
-        # 6. Dong chu nhap nhay o day poster
-        pulse_alpha = int(180 + 75 * abs(((self.pulse_timer) % 2) - 1))
+        # 6. Dong chu o day poster
         p_sub = self.font_mini.render(">> BAM CHON TASK BEN PHAI DE VAO GAME <<", True, (241, 196, 15))
         self.screen.blit(p_sub, p_sub.get_rect(center=(rect.centerx, rect.bottom - 20)))
 
@@ -557,18 +543,18 @@ class MasterDashboard:
         pygame.draw.rect(self.screen, self.COLOR_HEADER_BG, header_rect)
         pygame.draw.line(self.screen, self.COLOR_BORDER, (0, 80), (self.WINDOW_WIDTH, 80), 2)
 
-        self._draw_button("back_to_menu", "< MENU CHÍNH", pygame.Rect(25, 24, 140, 32), bg_color=(185, 28, 28))
+        self._draw_button("back_to_menu", "< MENU CHINH", pygame.Rect(25, 24, 140, 32), bg_color=(185, 28, 28))
 
         if task_num == 1:
-            h_title = "TASK 1: BÀI TOÁN N-QUEENS (SAT & MIN-CONFLICTS)"
+            h_title = "TASK 1: BAI TOAN N-QUEENS (SAT & MIN-CONFLICTS)"
             h_col = self.COLOR_GREEN
             h_badge = "3.0 PTS | LOGIC & LOCAL SEARCH"
         elif task_num == 2:
-            h_title = "TASK 2: CHIẾN ĐẤU XE TĂNG BATTLE TANK (ZERO-SUM GAME)"
+            h_title = "TASK 2: CHIEN DAU XE TANG BATTLE TANK (ZERO-SUM GAME)"
             h_col = self.COLOR_ORANGE
             h_badge = "3.0 PTS | ADVERSARIAL SEARCH"
         else:
-            h_title = "TASK 3: TRÒ CHƠI KAKURO CSP (GAC & MAC PROPAGATION)"
+            h_title = "TASK 3: TRO CHOI KAKURO CSP (GAC & MAC PROPAGATION)"
             h_col = self.COLOR_PURPLE
             h_badge = "3.0 PTS | CONSTRAINT SATISFACTION"
 
@@ -577,22 +563,22 @@ class MasterDashboard:
         b_surf = self.font_tag.render(h_badge, True, self.COLOR_GOLD)
         self.screen.blit(b_surf, (185, 48))
 
-        # 2. Bố cục 2 cột: Cột Trái (Biểu đồ cột riêng lớn 670px) + Cột Phải (Nút bấm thao tác 345px)
+        # 2. Bo cuc 2 cot: Cot Trai (Bieu do cot rieng lon 670px) + Cot Phai (Nut bam thao tac 345px)
         left_rect = pygame.Rect(25, 96, 670, 560)
         right_rect = pygame.Rect(710, 96, 345, 560)
 
-        # Cột Trái: Biểu đồ cột
+        # Cot Trai: Bieu do cot
         self._render_task_specific_charts(task_num, left_rect)
 
-        # Cột Phải: Các nút điều khiển & thông tin giải thuật
+        # Cot Phai: Cac nut dieu khien & thong tin giai thuat
         self._render_task_control_column(task_num, right_rect)
 
     def _render_task_specific_charts(self, task_num: int, rect: pygame.Rect):
         pygame.draw.rect(self.screen, self.COLOR_CARD_BG, rect, border_radius=8)
         pygame.draw.rect(self.screen, self.COLOR_BORDER, rect, 1, border_radius=8)
 
-        # Header khung biểu đồ
-        t_surf = self.font_card_title.render("BIỂU ĐỒ CỘT ĐỐI SÁNH THUẬT TOÁN (THỰC NGHIỆM ĐỊNH LƯỢNG)", True, (255, 255, 255))
+        # Header khung bieu do
+        t_surf = self.font_card_title.render("BIEU DO COT DOI SANH THUAT TOAN (THUC NGHIEM DINH LUONG)", True, (255, 255, 255))
         self.screen.blit(t_surf, (rect.left + 16, rect.top + 14))
         pygame.draw.line(self.screen, (45, 54, 72), (rect.left + 16, rect.top + 40), (rect.right - 16, rect.top + 40), 1)
 
@@ -603,24 +589,24 @@ class MasterDashboard:
         if task_num == 1:
             charts = [
                 {
-                    "title": "1. Số mệnh đề CNF sinh ra tại N=50 (Mã hoá SAT):",
-                    "badge": "Giảm 86% Clauses",
+                    "title": "1. So menh de CNF sinh ra tai N=50 (Ma hoa SAT):",
+                    "badge": "Giam 86% Clauses",
                     "bars": [
                         ("Sequential Counter", 28858, 203400, "28,858", (56, 189, 248)),
                         ("Pairwise Encoder", 203400, 203400, "203,400", (239, 68, 68)),
                     ]
                 },
                 {
-                    "title": "2. Số bước lặp thuật toán Min-Conflicts tại N=1000:",
-                    "badge": "Nhanh gấp 22.5 lần",
+                    "title": "2. So buoc lap thuat toan Min-Conflicts tai N=1000:",
+                    "badge": "Nhanh gap 22.5 lan",
                     "bars": [
-                        ("Heuristic (Greedy+Tabu)", 31.6, 713.6, "31.6 bước", (16, 185, 129)),
-                        ("Standard Min-Conflicts", 713.6, 713.6, "713.6 bước", (239, 68, 68)),
+                        ("Heuristic (Greedy+Tabu)", 31.6, 713.6, "31.6 buoc", (16, 185, 129)),
+                        ("Standard Min-Conflicts", 713.6, 713.6, "713.6 buoc", (239, 68, 68)),
                     ]
                 },
                 {
-                    "title": "3. Thời gian giải trung bình tại N=1000 (ms):",
-                    "badge": "Tối ưu 42% thời gian",
+                    "title": "3. Thoi gian giai trung binh tai N=1000 (ms):",
+                    "badge": "Toi uu 42% thoi gian",
                     "bars": [
                         ("Heuristic Min-Conflicts", 278.9, 483.1, "279 ms", (16, 185, 129)),
                         ("Standard Min-Conflicts", 483.1, 483.1, "483 ms", (239, 68, 68)),
@@ -630,59 +616,59 @@ class MasterDashboard:
         elif task_num == 2:
             charts = [
                 {
-                    "title": "1. Số Node duyệt tại độ sâu d=2 (Map arena_11x11):",
-                    "badge": "Cắt tỉa 70% Nodes",
+                    "title": "1. So Node duyet tai do sau d=2 (Map arena_11x11):",
+                    "badge": "Cat tia 70% Nodes",
                     "bars": [
                         ("Alpha-Beta Pruning", 11, 36, "11 nodes", (16, 185, 129)),
                         ("Standard Minimax", 36, 36, "36 nodes", (239, 68, 68)),
                     ]
                 },
                 {
-                    "title": "2. Thời gian tính toán nước đi mỗi Turn (ms):",
-                    "badge": "Nhanh gấp 3.4 lần",
+                    "title": "2. Thoi gian tinh toan nuoc di (Standard 13x13):",
+                    "badge": "Nhanh gap 3.7 lan",
                     "bars": [
-                        ("Alpha-Beta Pruning", 2.4, 8.1, "2.4 ms", (16, 185, 129)),
-                        ("Standard Minimax", 8.1, 8.1, "8.1 ms", (239, 68, 68)),
+                        ("Heuristic AlphaBeta", 32.8, 120.3, "32.8 ms", (16, 185, 129)),
+                        ("Heuristic Minimax", 120.3, 120.3, "120.3 ms", (239, 68, 68)),
                     ]
                 },
                 {
-                    "title": "3. Tỉ lệ thắng thi đấu vòng tròn 10 trận (%):",
-                    "badge": "AI Thích ứng Áp đảo",
+                    "title": "3. Diem Giai dau Vong tron (Round-Robin 8 tran):",
+                    "badge": "Bat bai 100% (4T-4H-0B)",
                     "bars": [
-                        ("Heuristic AlphaBeta", 92, 100, "92%", (16, 185, 129)),
-                        ("Heuristic Minimax", 88, 100, "88%", (56, 189, 248)),
-                        ("Thuần AlphaBeta", 25, 100, "25%", (249, 115, 22)),
-                        ("Random Agent", 0, 100, "0%", (120, 120, 120)),
+                        ("Heuristic AlphaBeta", 16, 16, "16 diem", (16, 185, 129)),
+                        ("Heuristic Minimax", 16, 16, "16 diem", (56, 189, 248)),
+                        ("Alpha-Beta / MM", 9, 16, "9 diem", (249, 115, 22)),
+                        ("Random Agent", 2, 16, "2 diem", (120, 120, 120)),
                     ]
                 }
             ]
         else:  # task 3
             charts = [
                 {
-                    "title": "1. Số Node duyệt cây quay lui trên đề 5x5:",
-                    "badge": "Giảm 99.8% so với BT",
+                    "title": "1. So Node duyet cay quay lui tren de 5x5:",
+                    "badge": "Giam 99.8% so voi BT",
                     "bars": [
                         ("BT + MAC (MRV+LCV)", 12, 6468, "12 nodes", (16, 185, 129)),
                         ("BT + FC (MRV)", 13, 6468, "13 nodes", (56, 189, 248)),
-                        ("Pure BT + MRV", 71, 6468, "71 nodes", (251, 191, 36)),
+                        ("Pure BT + MRV", 74, 6468, "74 nodes", (251, 191, 36)),
                         ("Pure Backtracking", 6468, 6468, "6,468 n", (239, 68, 68)),
                     ]
                 },
                 {
-                    "title": "2. Số lần Quay lui (Backtracks) trên đề 5x5:",
-                    "badge": "0 Nhánh cụt (0 Backtrack)",
+                    "title": "2. So lan Quay lui (Backtracks) tren de 5x5:",
+                    "badge": "0 Nhanh cut (0 Backtrack)",
                     "bars": [
-                        ("BT + MAC", 0, 712, "0 lần", (16, 185, 129)),
-                        ("BT + FC", 1, 712, "1 lần", (56, 189, 248)),
-                        ("Pure Backtracking", 712, 712, "712 lần", (239, 68, 68)),
+                        ("BT + MAC", 0, 712, "0 lan", (16, 185, 129)),
+                        ("BT + FC", 1, 712, "1 lan", (56, 189, 248)),
+                        ("Pure Backtracking", 712, 712, "712 lan", (239, 68, 68)),
                     ]
                 },
                 {
-                    "title": "3. Số giá trị bị cắt tỉa khỏi miền (Prunings):",
-                    "badge": "GAC triệt tiêu sớm",
+                    "title": "3. So gia tri bi cat tia khoi mien (Prunings):",
+                    "badge": "GAC triet tieu som",
                     "bars": [
-                        ("MAC (GAC Arc Consistency)", 43, 43, "43 giá trị", (16, 185, 129)),
-                        ("Forward Checking (FC)", 21, 43, "21 giá trị", (56, 189, 248)),
+                        ("MAC (GAC Arc Consistency)", 43, 45, "43 gia tri", (16, 185, 129)),
+                        ("Forward Checking (FC)", 45, 45, "45 gia tri", (56, 189, 248)),
                     ]
                 }
             ]
@@ -753,77 +739,77 @@ class MasterDashboard:
         bw = rect.width - 32
         bx = rect.left + 16
 
-        # Tiêu đề cột
-        t_surf = self.font_card_title.render("THAO TÁC & THÔNG SỐ", True, (255, 255, 255))
+        # Tieu de cot
+        t_surf = self.font_card_title.render("THAO TAC & THONG SO", True, (255, 255, 255))
         self.screen.blit(t_surf, (bx, y))
         y += 26
         pygame.draw.line(self.screen, (45, 54, 72), (bx, y), (rect.right - 16, y), 1)
         y += 16
 
-        # 1. NÚT KHỞI CHẠY CHÍNH (Launch GUI)
+        # 1. NUT KHOI CHAY CHINH (Launch GUI)
         launch_id = f"launch_task{task_num}"
         if task_num == 1:
-            l_txt = "▶ MỞ GIAO DIỆN TASK 1 >"
+            l_txt = ">> MO GIAO DIEN TASK 1 >"
             l_col = (39, 174, 96)
         elif task_num == 2:
-            l_txt = "▶ MỞ GIAO DIỆN BATTLE TANK >"
+            l_txt = ">> MO GIAO DIEN BATTLE TANK >"
             l_col = (211, 84, 0)
         else:
-            l_txt = "▶ MỞ GIAO DIỆN KAKURO CSP >"
+            l_txt = ">> MO GIAO DIEN KAKURO CSP >"
             l_col = (142, 68, 173)
         self._draw_button(launch_id, l_txt, pygame.Rect(bx, y, bw, 46), bg_color=l_col, font=self.font_btn_lg)
         y += 58
 
-        # 2. NÚT XEM CHI TIẾT THUẬT TOÁN (Open Modal)
+        # 2. NUT XEM CHI TIET THUAT TOAN (Open Modal)
         info_id = f"info_task{task_num}"
-        self._draw_button(info_id, "ℹ CHI TIẾT THUẬT TOÁN & ĐẶC TẢ", pygame.Rect(bx, y, bw, 40), bg_color=(45, 54, 72))
+        self._draw_button(info_id, "[INFO] CHI TIET THUAT TOAN & DAC TA", pygame.Rect(bx, y, bw, 40), bg_color=(45, 54, 72))
         y += 50
 
-        # 3. NÚT CHẠY TEST ĐO ĐẠC RIÊNG
-        self._draw_button("run_1click", "⚡ CHẠY TEST ĐO ĐẠC PIPELINE", pygame.Rect(bx, y, bw, 40), bg_color=(35, 75, 125))
+        # 3. NUT CHAY TEST DO DAC RIENG
+        self._draw_button("run_1click", "[TEST] CHAY TEST DO DAC PIPELINE", pygame.Rect(bx, y, bw, 40), bg_color=(35, 75, 125))
         y += 50
 
-        # 4. NÚT XEM SƠ ĐỒ KIẾN TRÚC
-        self._draw_button("open_arch", "🏛 XEM SƠ ĐỒ HỆ THỐNG HTML", pygame.Rect(bx, y, bw, 40), bg_color=(95, 45, 115))
+        # 4. NUT THONG TIN NHOM 08
+        self._draw_button("team_info", "[NHOM 08] THONG TIN THANH VIEN", pygame.Rect(bx, y, bw, 40), bg_color=(75, 55, 115))
         y += 62
 
-        # 5. Hộp thẻ tóm tắt tham số cấu hình bài toán
+        # 5. Hop the tom tat tham so cau hinh bai toan
         cfg_box = pygame.Rect(bx, y, bw, 220)
         pygame.draw.rect(self.screen, (18, 22, 32), cfg_box, border_radius=6)
         pygame.draw.rect(self.screen, (38, 48, 68), cfg_box, 1, border_radius=6)
 
         cy = cfg_box.top + 12
-        cfg_title = self.font_tag.render("THÔNG SỐ CẤU HÌNH KIỂM ĐỊNH:", True, self.COLOR_ACCENT)
+        cfg_title = self.font_tag.render("THONG SO CAU HINH KIEM DINH:", True, self.COLOR_ACCENT)
         self.screen.blit(cfg_title, (bx + 12, cy))
         cy += 22
 
         if task_num == 1:
             specs = [
-                ("Bộ giải SAT", "Glucose3 (PySAT Engine)"),
-                ("Mã hoá CNF", "Sequential Counter O(N^2)"),
+                ("Bo giai SAT", "Glucose3 (PySAT Engine)"),
+                ("Ma hoa CNF", "Sequential Counter O(N^2)"),
                 ("Heuristic Search", "Min-Conflicts + Greedy + Tabu"),
-                ("Kích thước thử nghiệm", "N = 4, 8, 16, 50, 1000"),
-                ("Tỉ lệ thành công", "100% Valid Queens Placement"),
+                ("Kich thuoc thu nghiem", "N = 4, 8, 16, 50, 1000"),
+                ("Ti le thanh cong", "100% Valid Queens Placement"),
             ]
         elif task_num == 2:
             specs = [
-                ("Mô hình bài toán", "Zero-Sum 2-Player Game"),
-                ("Cấu hình Search", "Minimax & Alpha-Beta (d=2)"),
-                ("Chiến thuật AI", "Rusher, Guardian, Flanker, Adapt"),
-                ("Địa hình Battle City", "Gạch, Thép, Rừng cây xanh T"),
-                ("Phát hiện bế tắc", "Anti-Stalemate Flanking Logic"),
+                ("Mo hinh bai toan", "Zero-Sum 2-Player Game"),
+                ("Cau hinh Search", "Minimax & Alpha-Beta (d=2)"),
+                ("Chien thuat AI", "Rusher, Guardian, Flanker, Adapt"),
+                ("Dia hinh Battle City", "Gach, Thep, Rung cay xanh T"),
+                ("Phat hien be tac", "Anti-Stalemate Flanking Logic"),
             ]
         else:
             specs = [
-                ("Mô hình bài toán", "Constraint Satisfaction (CSP)"),
-                ("Lan truyền ràng buộc", "GAC (Bipartite Matching), MAC, FC"),
+                ("Mo hinh bai toan", "Constraint Satisfaction (CSP)"),
+                ("Lan truyen rang buoc", "GAC (Bipartite Matching), MAC, FC"),
                 ("Heuristics", "MRV + Degree + LCV"),
-                ("Bảng tổ hợp", "Precomputed Partitions Table"),
-                ("Số lần quay lui", "0 Backtracks (1 mạch giải đúng)"),
+                ("Bang to hop", "Precomputed Partitions Table"),
+                ("So lan quay lui", "0 Backtracks (1 mach giai dung)"),
             ]
 
         for s_lbl, s_val in specs:
-            sl = self.font_mini.render(f"• {s_lbl}:", True, self.COLOR_TEXT_MUTED)
+            sl = self.font_mini.render(f"- {s_lbl}:", True, self.COLOR_TEXT_MUTED)
             self.screen.blit(sl, (bx + 12, cy))
             cy += 16
             sv = self.font_tag.render(s_val, True, (255, 255, 255))
@@ -848,10 +834,10 @@ class MasterDashboard:
 
         # Header modal
         if modal_id == "task1":
-            title = self.font_card_title.render("TASK 1: BÀI TOÁN N-QUEENS (SAT & MIN-CONFLICTS)", True, self.COLOR_GREEN)
+            title = self.font_card_title.render("TASK 1: BAI TOAN N-QUEENS (SAT & MIN-CONFLICTS)", True, self.COLOR_GREEN)
             sections = [
-                ("1. Mô hình hoá Logic Mệnh đề (Propositional Logic SAT):", [
-                    "Biến logic X_i_j = True neu dat quan Hau tai toa do hang i, cot j tren ban co N x N.",
+                ("1. Mo hinh hoa Logic Menh de (Propositional Logic SAT):", [
+                    "Bien logic X_i_j = True neu dat quan Hau tai toa do hang i, cot j tren ban co N x N.",
                     "Rang buoc: Exactly-One-Queen tren moi hang, cot va At-Most-One-Queen tren moi duong cheo.",
                 ]),
                 ("2. So sanh Bo ma hoa CNF (Pairwise vs Sequential Counter):", [
@@ -865,11 +851,11 @@ class MasterDashboard:
                 ]),
             ]
             launch_id = "modal_launch_task1"
-            launch_txt = "MỞ GIAO DIỆN TASK 1 NGAY >"
+            launch_txt = "MO GIAO DIEN TASK 1 NGAY >"
             launch_col = (39, 174, 96)
 
         elif modal_id == "task2":
-            title = self.font_card_title.render("TASK 2: CHIẾN ĐẤU XE TĂNG (BATTLE TANK)", True, self.COLOR_ORANGE)
+            title = self.font_card_title.render("TASK 2: CHIEN DAU XE TANG (BATTLE TANK)", True, self.COLOR_ORANGE)
             sections = [
                 ("1. Mo hinh hoa Zero-Sum Game & Tim kiem doi khang:", [
                     "Ban co luoi doi khang 2 nguoi choi (P1 vs P2). Xe tang 6 HP, can cu 9 HP, tuong gach 3 HP, tuong thep bat tu.",
@@ -886,11 +872,11 @@ class MasterDashboard:
                 ]),
             ]
             launch_id = "modal_launch_task2"
-            launch_txt = "MỞ GIAO DIỆN TASK 2 NGAY >"
+            launch_txt = "MO GIAO DIEN TASK 2 NGAY >"
             launch_col = (211, 84, 0)
 
         elif modal_id == "task3":
-            title = self.font_card_title.render("TASK 3: TRÒ CHƠI KAKURO (CSP & PROPAGATION)", True, self.COLOR_PURPLE)
+            title = self.font_card_title.render("TASK 3: TRO CHOI KAKURO (CSP & PROPAGATION)", True, self.COLOR_PURPLE)
             sections = [
                 ("1. Mo hinh hoa Bai toan Thoa man Rang buoc (CSP):", [
                     "Cac o trang la bien co mien gia tri D in {1..9}. Manh moi (Clues) la rang buoc Tong (Sum) va AllDifferent.",
@@ -907,11 +893,11 @@ class MasterDashboard:
                 ]),
             ]
             launch_id = "modal_launch_task3"
-            launch_txt = "MỞ GIAO DIỆN TASK 3 NGAY >"
+            launch_txt = "MO GIAO DIEN TASK 3 NGAY >"
             launch_col = (142, 68, 173)
 
         else:  # team
-            title = self.font_card_title.render("THÔNG TIN ĐỒ ÁN & NHÓM 08", True, self.COLOR_GOLD)
+            title = self.font_card_title.render("THONG TIN DO AN & NHOM 08", True, self.COLOR_GOLD)
             sections = [
                 ("Thong tin Mon hoc & Don vi dao tao:", [
                     "Truong Dai hoc Ton Duc Thang (TDTU) - Khoa Cong nghe Thong tin",
@@ -924,12 +910,12 @@ class MasterDashboard:
                     "3. Le Hoang Minh Khoi - MSSV: 524H0102",
                 ]),
                 ("Trang thai Nop bai & Kiem dinh:", [
-                    "Pytest Unit Tests: 31/31 tests PASS (100% tinh dung dan tren toan bo 3 Task).",
+                    "Pytest Unit Tests: 36/36 tests PASS (100% tinh dung dan tren toan bo 3 Task).",
                     "Dong goi san sang 3 file zip rieng biet cho 3 thanh vien bang script package_submission.py.",
                 ]),
             ]
             launch_id = "modal_ok"
-            launch_txt = "ĐÃ HIỂU & ĐÓNG"
+            launch_txt = "DA HIEU & DONG"
             launch_col = (52, 152, 219)
 
         self.screen.blit(title, (mx + 22, my + 16))
@@ -948,7 +934,7 @@ class MasterDashboard:
 
         # Nut hanh dong o day modal
         self._draw_button(launch_id, launch_txt, pygame.Rect(mx + mw - 280, my + mh - 46, 260, 34), bg_color=launch_col)
-        self._draw_button("close_modal", "QUAY LẠI", pygame.Rect(mx + 22, my + mh - 46, 110, 34), bg_color=(45, 52, 65))
+        self._draw_button("close_modal", "QUAY LAI", pygame.Rect(mx + 22, my + mh - 46, 110, 34), bg_color=(45, 52, 65))
 
     # =========================================================================
     # 4. DEMO VIEW (1-CLICK TEST TOAN BO PIPELINE)
@@ -1036,9 +1022,9 @@ class MasterDashboard:
         pygame.draw.rect(self.screen, self.COLOR_HEADER_BG, header_rect)
         pygame.draw.line(self.screen, self.COLOR_BORDER, (0, 80), (self.WINDOW_WIDTH, 80), 2)
 
-        self._draw_button("back_to_menu", "< MENU CHÍNH", pygame.Rect(25, 24, 140, 32), bg_color=(185, 28, 28))
+        self._draw_button("back_to_menu", "< MENU CHINH", pygame.Rect(25, 24, 140, 32), bg_color=(185, 28, 28))
 
-        t_title = self.font_title.render("KẾT QUẢ ĐO ĐẠC PIPELINE 1-CLICK RUN (THỰC NGHIỆM 3 TASKS)", True, (255, 255, 255))
+        t_title = self.font_title.render("KET QUA DO DAC PIPELINE 1-CLICK RUN (THUC NGHIEM 3 TASKS)", True, (255, 255, 255))
         self.screen.blit(t_title, (185, 20))
 
         tot_time = self.demo_results.get("total_time_ms", 0.0) if self.demo_results else 0.0
@@ -1049,7 +1035,7 @@ class MasterDashboard:
         col_h = 490
         y_top = 100
 
-        # Thẻ Task 1
+        # The Task 1
         d1 = self.demo_results["task1"] if self.demo_results else {}
         self._render_demo_card(
             rect=pygame.Rect(35, y_top, col_w, col_h),
@@ -1066,11 +1052,11 @@ class MasterDashboard:
             ],
             callout="Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts nhanh gap 22.5 lan!",
             btn_id="select_task1",
-            btn_text="XEM CHI TIẾT TASK 1 >",
+            btn_text="XEM CHI TIET TASK 1 >",
             btn_color=(39, 174, 96),
         )
 
-        # Thẻ Task 2
+        # The Task 2
         d2 = self.demo_results["task2"] if self.demo_results else {}
         self._render_demo_card(
             rect=pygame.Rect(380, y_top, col_w, col_h),
@@ -1087,11 +1073,11 @@ class MasterDashboard:
             ],
             callout="Alpha-Beta cat bo 70% so nut. Heuristic BFS chong hoa va boc suon linh hoat!",
             btn_id="select_task2",
-            btn_text="XEM CHI TIẾT TASK 2 >",
+            btn_text="XEM CHI TIET TASK 2 >",
             btn_color=(211, 84, 0),
         )
 
-        # Thẻ Task 3
+        # The Task 3
         d3 = self.demo_results["task3"] if self.demo_results else {}
         self._render_demo_card(
             rect=pygame.Rect(725, y_top, col_w, col_h),
@@ -1108,14 +1094,14 @@ class MasterDashboard:
             ],
             callout="GAC va MAC triet tieu 100% nhanh cut, giai 1 mach voi 0 lan quay lui tren 5x5!",
             btn_id="select_task3",
-            btn_text="XEM CHI TIẾT TASK 3 >",
+            btn_text="XEM CHI TIET TASK 3 >",
             btn_color=(142, 68, 173),
         )
 
         # Bottom Action Bar
         y_bottom = 615
         pygame.draw.line(self.screen, self.COLOR_BORDER, (0, y_bottom), (self.WINDOW_WIDTH, y_bottom), 1)
-        self._draw_button("demo_rerun", "CHẠY LẠI 1-CLICK RUN", pygame.Rect(35, y_bottom + 10, 220, 34), bg_color=(39, 174, 96))
+        self._draw_button("demo_rerun", "CHAY LAI 1-CLICK RUN", pygame.Rect(35, y_bottom + 10, 220, 34), bg_color=(39, 174, 96))
 
     def _render_demo_card(self, rect: pygame.Rect, badge: str, badge_color, title: str, items: list[tuple[str, str]], callout: str, btn_id: str, btn_text: str, btn_color):
         mouse_pos = pygame.mouse.get_pos()

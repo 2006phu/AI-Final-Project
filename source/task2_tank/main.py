@@ -16,7 +16,7 @@ from task2_tank.gui import TankBattleGUI, discover_custom_agents
 
 def build_agent(agent_name: str, depth: int, agents_dir: str) -> BaseAgent:
     name_lower = agent_name.lower()
-    if name_lower in ("hab", "heuristic_alphabeta", "heuristic_alpha_beta"):
+    if name_lower in ("hab", "heuristic_ab", "heuristic_alphabeta", "heuristic_alpha_beta"):
         return SearchAgent.create_heuristic_alpha_beta(depth=depth)
     elif name_lower in ("hmm", "heuristic_minimax"):
         return SearchAgent.create_heuristic_minimax(depth=depth)
@@ -29,10 +29,15 @@ def build_agent(agent_name: str, depth: int, agents_dir: str) -> BaseAgent:
     elif name_lower in ("human", "player"):
         return HumanAgent()
 
-    # Kiem tra nạp động từ custom agents
+    # Kiem tra nap dong tu custom agents (ho tro ten hien thi, ten class hoac tu khoa ngan)
     custom_agents = discover_custom_agents(agents_dir)
     for c_name, c_cls in custom_agents.items():
-        if agent_name.lower() == c_name.lower():
+        if (
+            name_lower == c_name.lower()
+            or name_lower == c_cls.__name__.lower()
+            or name_lower in c_name.lower()
+            or name_lower in c_cls.__name__.lower()
+        ):
             return c_cls()
 
     raise ValueError(f"Khong tim thay Agent: '{agent_name}'. Cac lua chon: hab, hmm, ab, mm, random, human, hoac ten class trong agents/")
@@ -80,13 +85,14 @@ def main():
     parser.add_argument("--p1", type=str, default="hab", help="Thuat toan P1: hab, hmm, ab, mm, random, human, custom")
     parser.add_argument("--p2", type=str, default="hab", help="Thuat toan P2: hab, hmm, ab, mm, random, human, custom")
     parser.add_argument("--depth", type=int, default=2, help="Do sau tim kiem (plies, mac dinh=2)")
+    parser.add_argument("--turns", type=int, default=200, help="So chu ky toi da khi mo phong headless (mac dinh=200)")
     parser.add_argument("--headless", action="store_true", help="Chay mo phong khong mo cua so GUI")
     args = parser.parse_args()
 
     if args.headless:
         p1_agent = build_agent(args.p1, args.depth, agents_dir)
         p2_agent = build_agent(args.p2, args.depth, agents_dir)
-        run_headless_simulation(args.map, p1_agent, p2_agent)
+        run_headless_simulation(args.map, p1_agent, p2_agent, max_turns=args.turns)
     else:
         # Khoi dong GUI tuong tac: Chi can 1 lenh chay 'python source/task2_tank/main.py'
         # Toan bo lua chon Ban do, Agent P1, Agent P2, Speed, Play/Pause deu thao tac bang chuot tren GUI!

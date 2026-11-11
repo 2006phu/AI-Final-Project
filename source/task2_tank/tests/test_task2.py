@@ -2,6 +2,10 @@ import os
 import pytest
 from task2_tank.agents.random_agent import RandomAgent
 from task2_tank.agents.search_agent import SearchAgent
+from task2_tank.agents.agent_guardian import GuardianAgent
+from task2_tank.agents.agent_rusher import RusherAgent
+from task2_tank.agents.agent_flanker import FlankerAgent
+from task2_tank.agents.agent_adaptive import AdaptiveAgent
 from task2_tank.engine import GameEngine
 from task2_tank.entities import Action, Direction, Tank, Base, Wall, Bullet
 from task2_tank.game_state import GameState
@@ -80,8 +84,9 @@ def test_search_agent_equivalence():
 def test_dynamic_agent_discovery():
     agents_dir = os.path.join(os.path.dirname(__file__), "..", "agents")
     custom = discover_custom_agents(agents_dir)
-    # Khong ném ngoai le, tra ve dict
+    # Khong nem ngoai le, tra ve dict chua 4 custom agents
     assert isinstance(custom, dict)
+    assert len(custom) == 4
 
 
 def test_forest_tile_passable_and_bullet_passthrough():
@@ -105,4 +110,97 @@ def test_forest_tile_passable_and_bullet_passthrough():
     shoot_s = GameEngine.step(next_s, Action.FIRE, Action.STAY)
     # Dan bay tu o rung (1, 1) sang phai va tan cong vao Tank 2 o (1, 2)
     assert shoot_s.tanks[1].hp < Tank.INITIAL_HP
+
+
+def test_all_custom_agents_with_active_enemy_bullets():
+    state = GameState(9, 9)
+    state.tanks[0] = Tank(0, r=7, c=4, direction=Direction.UP)
+    state.tanks[1] = Tank(1, r=1, c=4, direction=Direction.DOWN)
+    state.bases[0] = Base(0, r=8, c=4)
+    state.bases[1] = Base(1, r=0, c=4)
+    # Vien dan cua doi phuong dang bay thang ve phia xe va can cu cua Player 0
+    state.bullets.append(Bullet(owner_id=1, r=4, c=4, direction=Direction.DOWN))
+
+    for agent_cls in (GuardianAgent, RusherAgent, FlankerAgent, AdaptiveAgent):
+        agent = agent_cls(depth=2)
+        act0 = agent.get_action(state, player_id=0)
+        act1 = agent.get_action(state, player_id=1)
+        assert isinstance(act0, Action)
+        assert isinstance(act1, Action)
+
+
+def test_state_key_distinguishes_intact_vs_destroyed_brick_walls():
+    state1 = GameState(5, 5)
+    state1.tanks[0] = Tank(0, r=4, c=2, direction=Direction.UP)
+    state1.tanks[1] = Tank(1, r=0, c=2, direction=Direction.DOWN)
+    state1.bases[0] = Base(0, r=4, c=0)
+    state1.bases[1] = Base(1, r=0, c=4)
+    state1.walls[(2, 2)] = Wall(2, 2, hp=3, is_steel=False)
+
+    state2 = state1.clone()
+    state2.walls[(2, 2)].take_damage(1)  # hp=2
+
+    state3 = state1.clone()
+    del state3.walls[(2, 2)]  # Tuong da bi pha huy hoan toan (hp=0)
+
+    assert state1.state_key() != state2.state_key()
+    assert state1.state_key() != state3.state_key()
+    assert state2.state_key() != state3.state_key()
+
+
+def test_bullet_travels_exact_3_cells_per_cycle_and_symmetric_adjacent_fire():
+    # 1. Kiem tra dan bay dung 3 o moi chu ky tren ban do trong
+    open_state = GameState(9, 9)
+    open_state.tanks[0] = Tank(0, r=7, c=4, direction=Direction.UP)
+    open_state.tanks[1] = Tank(1, r=0, c=0, direction=Direction.DOWN)
+    open_state.bases[0] = Base(0, r=8, c=4)
+    open_state.bases[1] = Base(0, r=0, c=8)
+
+    s1 = GameEngine.step(open_state, Action.FIRE, Action.STAY)
+    assert len(s1.bullets) == 1
+    assert s1.bullets[0].pos == (4, 4)  # Tu r=7 tien len 3 o -> r=4
+
+    # 2. Kiem tra 2 xe tang dung sat nhau (cach 1 o) ban cung luc -> doi xung 100% (2 vien dan triet tieu giua khong trung)
+    adj_state = GameState(5, 5)
+    adj_state.tanks[0] = Tank(0, r=2, c=2, direction=Direction.UP)
+    adj_state.tanks[1] = Tank(1, r=1, c=2, direction=Direction.DOWN)
+    adj_state.bases[0] = Base(0, r=4, c=2)
+    adj_state.bases[1] = Base(1, r=0, c=2)
+
+    s_adj = GameEngine.step(adj_state, Action.FIRE, Action.FIRE)
+    assert s_adj.tanks[0].hp == Tank.INITIAL_HP
+    assert s_adj.tanks[1].hp == Tank.INITIAL_HP
+    assert len(s_adj.bullets) == 0
+
+    # Neu chi 1 ben ban thi doi phuong nhan dung 1 sat thuong doi xung
+    s_p0 = GameEngine.step(adj_state, Action.FIRE, Action.STAY)
+    s_p1 = GameEngine.step(adj_state, Action.STAY, Action.FIRE)
+    assert s_p0.tanks[1].hp == Tank.INITIAL_HP - 1
+    assert s_p1.tanks[0].hp == Tank.INITIAL_HP - 1
+
+
+def test_agents_can_rotate_toward_destructible_brick_wall():
+    state = GameState(5, 5)
+    # Tank 0 dang nhin sang phai, bi bao quanh boi 3 tuong thep (trai, phai, duoi) va 1 tuong gach o phia tren (1, 2)
+    # Phia sau tuong gach (1, 2) la Base dich (0, 2)
+    state.tanks[0] = Tank(0, r=2, c=2, direction=Direction.RIGHT)
+    state.tanks[1] = Tank(1, r=0, c=0, direction=Direction.DOWN)
+    state.bases[0] = Base(0, r=4, c=4)
+    state.bases[1] = Base(1, r=0, c=2)
+    state.walls[(1, 2)] = Wall(1, 2, hp=3, is_steel=False)
+    state.walls[(2, 3)] = Wall(2, 3, hp=3, is_steel=True)
+    state.walls[(2, 1)] = Wall(2, 1, hp=3, is_steel=True)
+    state.walls[(3, 2)] = Wall(3, 2, hp=3, is_steel=True)
+
+    # RusherAgent va SearchAgent phai xoay nong phao len tren (MOVE_UP) de pha tuong gach thay vi ket cung STAY/MOVE_RIGHT
+    rusher = RusherAgent(depth=2)
+    act_r = rusher.get_action(state, player_id=0)
+    assert act_r == Action.MOVE_UP
+
+    search_ab = SearchAgent.create_heuristic_alpha_beta(depth=2)
+    ordered = search_ab._order_actions(state, GameEngine.get_legal_actions(state, 0), player_id=0)
+    assert ordered[0] == Action.MOVE_UP
+
+
+
 

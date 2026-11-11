@@ -83,7 +83,7 @@ class KakuroCSP:
             self.apply_initial_preprocessing()
 
     def apply_initial_preprocessing(self) -> bool:
-        """Thu hep mien ban dau: Domain(var) = Digits(H_run) ∩ Digits(V_run)."""
+        """Thu hep mien ban dau: Domain(var) = Digits(H_run) giao voi Digits(V_run)."""
         for var in self.variables:
             h_run = self.puzzle.cell_to_runs[var]["H"]
             v_run = self.puzzle.cell_to_runs[var]["V"]

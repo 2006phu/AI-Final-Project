@@ -69,6 +69,14 @@ class SearchAgent(BaseAgent):
         start_time = time.perf_counter()
         self.nodes_explored = 0
         self.pruning_count = 0
+        self.transposition_table.clear()
+
+        if state.turn_count == 0:
+            self.recent_positions.clear()
+            self.last_action = None
+            self.last_my_hp = None
+            self.last_opp_hp = None
+            self.neutralize_streak = 0
 
         tank = state.tanks.get(player_id)
         opp_id = 1 - player_id
@@ -226,19 +234,13 @@ class SearchAgent(BaseAgent):
             if self.use_heuristic:
                 return TankEvaluator.evaluate(state, player_id)
             else:
-                # Minimax thuan: tinh chenh lech mau va khoang cach BFS thuc te de tranh mu quang
+                # Minimax / Alpha-Beta thuan (khong dung Heuristic BFS/Aiming): chi tinh chenh lech HP co ban
                 my_t = state.tanks.get(player_id)
                 opp_b = state.bases.get(1 - player_id)
                 opp_t = state.tanks.get(1 - player_id)
                 my_b = state.bases.get(player_id)
                 if my_t and opp_b and opp_t and my_b:
-                    score = (my_t.hp - opp_t.hp) * 10.0 + (my_b.hp - opp_b.hp) * 20.0
-                    bfs_opp = TankEvaluator.get_bfs_dist_map(state, opp_b.pos)
-                    bfs_my = TankEvaluator.get_bfs_dist_map(state, my_b.pos)
-                    my_d = bfs_opp.get(my_t.pos, 50)
-                    opp_d = bfs_my.get(opp_t.pos, 50)
-                    score += float(opp_d - my_d) * 0.5
-                    return score
+                    return (my_t.hp - opp_t.hp) * 10.0 + (my_b.hp - opp_b.hp) * 20.0
                 return 0.0
 
         # 3. Kiem tra Transposition Table
@@ -312,6 +314,24 @@ class SearchAgent(BaseAgent):
         opp_base = state.bases.get(1 - player_id)
         if not tank or not opp_base:
             return actions
+
+        if not self.use_heuristic:
+            def basic_score(action: Action) -> int:
+                if action == Action.STAY:
+                    return -70
+                if action == Action.FIRE:
+                    return -120 if state.has_active_bullet(player_id) else 40
+                d = action.to_direction()
+                if not d:
+                    return 0
+                new_pos = (tank.r + d.dr, tank.c + d.dc)
+                if not state.is_inside(*new_pos):
+                    return -150
+                blocking = state.get_entity_at(*new_pos)
+                if blocking is not None and blocking != tank and blocking.is_alive:
+                    return -130
+                return 50
+            return sorted(actions, key=basic_score, reverse=True)
 
         bfs_map = TankEvaluator.get_bfs_dist_map(state, opp_base.pos)
         curr_dist = bfs_map.get(tank.pos, 99)

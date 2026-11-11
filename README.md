@@ -1,174 +1,173 @@
-# ĐỒ ÁN CUỐI KỲ: NHẬP MÔN TRÍ TUỆ NHÂN TẠO (503043)
-### TRƯỜNG ĐẠI HỌC TÔN ĐỨC THẮNG — KHOA CÔNG NGHỆ THÔNG TIN
-**Nhóm:** 08  
-**Giảng viên hướng dẫn:** ThS. Nguyễn Thành An (`nguyenthanhan@tdtu.edu.vn`)
+# DO AN CUOI KY: NHAP MON TRI TUE NHAN TAO (503043)
+
+**Truong Dai hoc Ton Duc Thang (TDTU) - Khoa Cong nghe Thong tin**  
+**Hoc ky 1 - Nam hoc 2026-2027**  
+**Giang vien Huong dan:** ThS. Nguyen Thanh An (`nguyenthanhan@tdtu.edu.vn`)
 
 ---
 
-## 👥 THÀNH VIÊN NHÓM 08
-1. **Lê Phú** — MSSV: `524H0121` *(Trưởng nhóm)*
-2. **Vũ Giang Huy** — MSSV: `524H0095`
-3. **Lê Hoàng Minh Khôi** — MSSV: `524H0102`
+## THONG TIN NHOM THUC HIEN (NHOM 08)
+
+| STT | Ho va Ten | Ma so Sinh vien (MSSV) | Vai tro | Goi nop bai tuong ung |
+| :---: | :--- | :---: | :---: | :--- |
+| 1 | **Le Phu** | `524H0121` | Truong nhom | `AI_final_08_524H0121.zip` |
+| 2 | **Vu Giang Huy** | `524H0095` | Thanh vien | `AI_final_08_524H0095.zip` |
+| 3 | **Le Hoang Minh Khoi** | `524H0102` | Thanh vien | `AI_final_08_524H0102.zip` |
 
 ---
 
-## 🚀 1. KHỞI ĐỘNG NHANH (QUICK START — 1 CLICK)
+## TONG QUAN 3 BAI TOAN COT LOI
 
-Dự án được thiết kế theo tiêu chí **trực quan hóa 100% bằng chuột**, hỗ trợ khởi động bằng **1 cú click chuột** mà không cần thao tác qua dòng lệnh:
+Do an trien khai day du 3 nhom ky thuat nen tang cua Tri tue Nhan tao tren 3 bai toan doc lap, tich hop trong mot giao dien dieu khien trung tam (**Master Arcade Hub**):
 
-### Cách 1: Trên Windows (Khuyên dùng)
-- **Chạy Bảng điều khiển trung tâm (Master Dashboard):**  
-  Double-click vào file **`run.bat`**. Giao diện Arcade Dark Tech Hub sẽ hiện lên, cho phép chuyển đổi mượt mà giữa cả 3 Task và xem lược đồ so sánh trực quan.
-- **Chạy tự động kiểm thử toàn bộ 3 Task (1-Click Run):**  
-  Double-click vào file **`run_1click.bat`**. Hệ thống sẽ tự động chạy pipeline kiểm thử đo đạc thực tế của Task 1 (SAT + Min-Conflicts), Task 2 (15 turns thi đấu Alpha-Beta vs Minimax), Task 3 (GAC/MAC trên Kakuro 5x5) và hiển thị bảng tổng hợp kết quả đạt chuẩn 100% PASS!
+1. **Task 1 - Bai toan N-Queens (Propositional Logic SAT & Heuristic Local Search):**
+   - Mo hinh hoa bai toan $N$-Queens duoi dang menh de logic CNF (`Pairwise` $O(N^3)$ va `Sequential Counter` $O(N^2)$) giai bang bo giai SAT `Glucose3` (`python-sat`).
+   - Thiet ke va cai dat thuat toan tim kiem cuc bo **Heuristic Min-Conflicts** (ket hop Khoi tao tham lam `Greedy Init`, uu tien chon quan hau xung dot cuc dai va hang doi `Tabu Search` ngan chu trinh lap), giup tang toc do hoi tu gap **22.5 lan** tai $N=1000$ so voi Min-Conflicts tieu chuan.
 
-### Cách 2: Trên macOS / Linux
-Mở terminal tại thư mục gốc của dự án và chạy:
-```bash
-bash run.sh
-```
+2. **Task 2 - Tro choi Chien dau Xe tang Battle Tank (Zero-Sum Game & Adversarial Search):**
+   - Mo hinh hoa tro choi doi khang 2 nguoi choi tren luoi toan hoc Zero-Sum Game voi day du co che vat ly: dan bay 3 o/chu ky kiem tra va cham tung o (cell-by-cell), hai vien dan doi dau triet tieu nhau, tuong gach 3 HP, tuong thep bat tu (`#`) va dia hinh rung cay (`T`) an nap nguy trang.
+   - Cai dat va doi sanh 4 cau hinh tim kiem doi khang: **Minimax**, **Alpha-Beta Pruning**, **Heuristic Minimax**, va **Heuristic Alpha-Beta** (ung dung `BFS Pathfinding`, `Move Ordering`, `Transposition Table`, va co che chong be tac `Anti-Stalemate Flanking`), cung 4 custom agents chien thuat (`Rusher`, `Guardian`, `Flanker`, `Adaptive`).
 
-### Cách 3: Chạy trực tiếp qua lệnh Python
-```bash
-# Khởi động Master Dashboard
-python main.py
-
-# Hoặc khởi động thẳng chế độ 1-Click Run
-python main.py --1click
-```
+3. **Task 3 - Tro choi Kakuro (Constraint Satisfaction Problem & Constraint Propagation):**
+   - Mo hinh hoa Kakuro duoi dang bai toan CSP voi bang phan tich to hop (`CombinationTable`) tien xu ly mien gia tri ban dau.
+   - Trien khai day du cac chien luoc tim kiem quay lui: **Pure Backtracking (BT)**, **Forward Checking (BT + FC)**, va **Maintaining Arc Consistency (BT + MAC)** su dung cap ghep cuc dai tren do thi hai phia (**Bipartite Matching**) de duy tri **Generalized Arc Consistency (GAC)** tren rang buoc toan cuc `AllDifferent + Sum`, ket hop voi bo 3 heuristics **MRV + Degree + LCV**.
 
 ---
 
-## 📦 2. CÀI ĐẶT MÔI TRƯỜNG (REQUIREMENTS)
+## CAU TRUC THU MUC DU AN
 
-- **Yêu cầu môi trường:** Python 3.10 trở lên (khuyên dùng Python 3.11 hoặc 3.12).
-- Cài đặt toàn bộ các thư viện cần thiết bằng lệnh:
-```bash
-pip install -r requirements.txt
-```
-*(Hoặc `pip install -r source/requirements.txt`)*
-
-**Các thư viện chính:**
-- `pygame-ce >= 2.5.0`: Thư viện đồ họa cho giao diện trực quan hóa tương tác của cả 3 Task và Master Hub.
-- `python-sat >= 1.2.0`: Chứa bộ giải SAT hiện đại Glucose3 phục vụ Task 1.
-- `pytest >= 8.0.0`: Khung kiểm thử tự động 30/30 unit tests cho toàn bộ hệ thống logic.
-- `matplotlib >= 3.8.0`: Vẽ đồ họa thống kê và biểu đồ phân tích trong các file jupyter notebook.
-- `tabulate`, `ipykernel`, `notebook`: Phục vụ hiển thị bảng biểu và thực nghiệm trong sổ tay notebook.
-
----
-
-## 📂 3. CẤU TRÚC THƯ MỤC DỰ ÁN
-
-```
-Cuối kỳ AI/
-├── main.py                     # Entrypoint khởi động Master Dashboard
-├── run.bat                     # File 1-click khởi động trên Windows
-├── run_1click.bat              # File 1-click chạy kiểm thử tự động toàn bộ 3 Task
-├── run.sh                      # Script khởi động trên Linux / macOS
-├── requirements.txt            # Danh sách thư viện cần thiết
-├── demo.txt                    # Link video demo và bảng đóng góp thành viên
-├── report.pdf                  # Báo cáo đồ án định dạng IEEE Conference
-├── package_submission.py       # Script tự động đóng gói zip nộp bài cho từng thành viên
-└── source/                     # Thư mục chứa mã nguồn chính
-    ├── main.py                 # Mã nguồn Master Dashboard GUI
-    ├── requirements.txt        # Thư viện yêu cầu bên trong source
-    ├── README.md               # Bản hướng dẫn chi tiết này
-    ├── task1_nqueens/          # TASK 1: N-Queens Problem
-    │   ├── board.py            # Quản lý bàn cờ N x N, ánh xạ biến logic DIMACS CNF
-    │   ├── cnf_encoder.py      # Mã hóa CNF: Pairwise O(N^3) & Sequential Counter O(N^2)
-    │   ├── sat_solver.py       # Tích hợp Glucose3 solver từ PySAT
-    │   ├── min_conflicts.py    # Min-Conflicts: Standard vs Đề xuất (Greedy + MaxConf + Tabu)
-    │   ├── gui.py              # Giao diện Pygame: Bàn cờ trực quan, vương miện, biểu đồ
-    │   ├── cli.py              # Giao diện dòng lệnh thực nghiệm
-    │   ├── experiments.ipynb   # Sổ tay thực nghiệm so sánh đầy đủ output
-    │   └── tests/              # Unit tests cho Task 1 (11/11 tests)
-    ├── task2_tank/             # TASK 2: Tank Battle Game
-    │   ├── entities.py         # Thực thể: Tank, Base, Wall, Bullet, Direction, Action
-    │   ├── game_state.py       # Mô hình trạng thái GameState, hàm đọc map ASCII
-    │   ├── engine.py           # GameEngine: Va chạm đạn cell-by-cell, giải quyết xung đột xe
-    │   ├── evaluator.py        # Hàm đánh giá trạng thái đối kháng Zero-Sum phản đối xứng
-    │   ├── agents/             # Bộ điều khiển AI: SearchAgent (Minimax, Alpha-Beta, Heuristics)
-    │   ├── maps/               # Bản đồ thi đấu: arena_11x11.txt, standard_13x13.txt
-    │   ├── gui.py              # Giao diện Pygame: Nạp động Agent, điều khiển trận đấu, biểu đồ
-    │   ├── experiments.ipynb   # Thực nghiệm so sánh 4 cấu hình search, depth, node prune
-    │   └── tests/              # Unit tests cho Task 2 (5/5 tests)
-    └── task3_kakuro/           # TASK 3: Kakuro CSP
-        ├── puzzle.py           # Phân tích đề bài Kakuro, xác thực tính toàn vẹn clue
-        ├── csp.py              # Mô hình hóa CSP, bảng tổ hợp sinh trước, tỉa miền ban đầu
-        ├── propagation.py      # Lan truyền ràng buộc: Bipartite matching GAC, FC, MAC
-        ├── solver.py           # Backtracking Solver: MRV, Degree, LCV, Generator sự kiện
-        ├── puzzles/            # Đề Kakuro: simple_3x3, example_5x5, complex_test_case
-        ├── gui.py              # Giao diện Pygame: Lưới bút chì 3x3 pencil-marks, màu sự kiện
-        ├── experiments.ipynb   # Thực nghiệm so sánh Backtracking, FC, MAC, MRV
-        └── tests/              # Unit tests cho Task 3 (14/14 tests)
+```text
+source/
+├── main.py                      # Giao dien trung tam Master Arcade Hub (1-Click Demo & 3 Task Hubs)
+├── requirements.txt             # Danh sach thu vien Python can thiet
+├── requirement.txt              # Ban sao tuong thich ten file theo dac ta de bai
+├── README.md                    # Tai lieu huong dan cai dat va van hanh he thong
+│
+├── task1_nqueens/               # [TASK 1] N-Queens: SAT Glucose3 & Heuristic Min-Conflicts
+│   ├── board.py                 # bieu dien ban co N x N va kiem tra xung dot O(1)
+│   ├── cnf_encoder.py           # Bo ma hoa CNF: Pairwise O(N^3) va Sequential Counter O(N^2)
+│   ├── sat_solver.py            # Tich hop bo giai Glucose3 (PySAT)
+│   ├── min_conflicts.py         # Standard Min-Conflicts va Heuristic Min-Conflicts (Greedy + Tabu)
+│   ├── gui.py                   # Giao dien truc quan hoa N-Queens bang Pygame
+│   ├── main.py                  # Giao dien dong lenh (CLI) va khoi chay GUI Task 1
+│   ├── experiments.ipynb        # Jupyter Notebook thuc nghiem, bang bieu va do thi Task 1
+│   └── tests/                   # Unit Tests kiem dinh Task 1 (11 tests)
+│
+├── task2_tank/                  # [TASK 2] Battle Tank: Zero-Sum Game & Adversarial Search
+│   ├── entities.py              # Dinh nghia Tank, Base, Wall (Brick/Steel), Bullet, Direction, Action
+│   ├── game_state.py            # Quan ly trang thai ban do, doc file map va state_key hashing
+│   ├── engine.py                # Game Engine xu ly luot di dong thoi va dan bay 3 o/chu ky
+│   ├── heuristic.py             # Ham danh gia Zero-Sum TankEvaluator & BFS Pathfinding
+│   ├── agents/                  # Cac Agent: SearchAgent (Minimax/Alpha-Beta), Random, Human & 4 Custom Agents
+│   ├── maps/                    # 7 ban do chien thuat (.txt), bao gom dia hinh rung cay Battle City
+│   ├── gui.py                   # Giao dien dau truong xe tang Pygame + nap dong Custom Agent
+│   ├── main.py                  # CLI mo phong headless hoac khoi chay GUI Task 2
+│   ├── experiments.ipynb        # Jupyter Notebook thuc nghiem va giai dau vong tron Task 2
+│   └── tests/                   # Unit Tests kiem dinh Task 2 (10 tests)
+│
+└── task3_kakuro/                # [TASK 3] Kakuro CSP: Backtracking, FC, MAC (GAC) & Heuristics
+    ├── puzzle.py                # Bo phan tich cu phap ma tran Kakuro (.txt) va kiem tra Clue Integrity
+    ├── csp.py                   # Mo hinh CSP, CombinationTable va tien xu ly thu hep mien
+    ├── propagation.py           # Lan truyen rang buoc FC, GAC (Bipartite Matching) va MAC
+    ├── solver.py                # BacktrackingSolver ho tro MRV, Degree, LCV va Stepwise Generator
+    ├── puzzles/                 # Cac de Kakuro chuan (.txt): example_3x3, example_5x5, complex_9x9, medium_7x7
+    ├── gui.py                   # Giao dien giai Kakuro tung buoc (Step-by-step Animation) bang Pygame
+    ├── main.py                  # CLI giai Kakuro va doi sanh chien luoc hoac mo GUI Task 3
+    ├── experiments.ipynb        # Jupyter Notebook thuc nghiem va bieu do Task 3
+    └── tests/                   # Unit Tests kiem dinh Task 3 (15 tests)
 ```
 
 ---
 
-## 🎯 4. HƯỚNG DẪN CHẠY TỪNG TASK RIÊNG LẺ
+## YEU CAU HE THONG VA CAI DAT THU VIEN
 
-Ngoài việc khởi động qua **Master Dashboard** (`python main.py`), giảng viên và người đánh giá có thể chạy độc lập từng Task qua GUI hoặc CLI:
-
-### Task 1: N-Queens Problem
-- **Mở Giao diện Pygame:**
-  ```bash
-  python source/task1_nqueens/gui.py
-  ```
-  *(Có thể chọn kích thước N = 4, 8, 12, 16, 20... và chuyển đổi linh hoạt giữa SAT Solver hoặc Min-Conflicts trực tiếp trên màn hình).*
-- **Chạy qua CLI:**
-  ```bash
-  # Giải N=8 bằng SAT Glucose3 với Sequential Counter:
-  python source/task1_nqueens/cli.py --n 8 --solver sat --encoder sequential
-
-  # Giải N=50 bằng Min-Conflicts cải tiến (Greedy + Tabu):
-  python source/task1_nqueens/cli.py --n 50 --solver min_conflicts --heuristic proposed
-  ```
-
-### Task 2: Tank Battle Game
-- **Mở Giao diện Pygame:**
-  ```bash
-  python source/task2_tank/gui.py
-  ```
-- **Tính năng nổi bật:**
-  - Nạp động Agent từ nhóm khác: Đặt file `agent_tennhom.py` kế thừa từ `BaseAgent` vào thư mục `source/task2_tank/agents/`. Giao diện sẽ tự động quét và đưa vào danh sách chọn lựa cho Player 1 hoặc Player 2.
-  - Chọn 4 cấu hình thuật toán: Minimax, Alpha-Beta, Heuristic Minimax, Heuristic Alpha-Beta.
-  - Tùy chỉnh tốc độ trận đấu (FPS), tạm dừng (Space), hoặc bước từng turn (phím S).
-
-### Task 3: Kakuro Puzzle (CSP)
-- **Mở Giao diện Pygame:**
-  ```bash
-  python source/task3_kakuro/gui.py
-  ```
-- **Tính năng nổi bật:**
-  - Hiển thị trực quan **lưới bút chì 3x3 (Pencil-mark subgrid)** trong từng ô trắng đại diện cho miền giá trị còn lại $\{1..9\}$.
-  - Mã màu trực quan: **Gán giá trị (Xanh lá)**, **Tỉa miền giá trị (Đỏ)**, **Quay lui (Cam)**.
-  - Lựa chọn giải thuật lan truyền: **Pure Backtracking**, **Forward Checking (FC)**, hoặc **Maintaining Arc Consistency (MAC)**.
-  - Chọn các câu đố mẫu: `simple_3x3.txt`, `example_5x5.txt`, hoặc `complex_test_case.txt` từ Wikipedia.
-
----
-
-## 🧪 5. KIỂM THỬ TỰ ĐỘNG (UNIT TESTS)
-
-Dự án trang bị bộ kiểm thử toàn diện với **30 test cases** kiểm tra chặt chẽ tính đúng đắn của toàn bộ thuật toán. Chạy lệnh:
+- **Phien ban Python:** Python `3.10` tro len (khuyen nghi Python `3.11+`).
+- **Cai dat thu vien:** Mo Terminal / PowerShell tai thu muc goc (hoac thu muc `source/`) va chay:
 
 ```bash
-pytest source/ -v
+pip install -r source/requirements.txt
 ```
 
-**Kết quả kiểm thử:**
-- Task 1: 11 tests (Kiểm tra DIMACS logic, tính hợp lệ bàn cờ, số mệnh đề Pairwise vs Sequential Counter, Glucose3, Heuristic Min-Conflicts).
-- Task 2: 5 tests (Kiểm tra va chạm cell-by-cell của đạn, triệt tiêu đạn đối đầu, va chạm xe, tính tương đương quyết định giữa Minimax và Alpha-Beta, cơ chế nạp động agent).
-- Task 3: 14 tests (Kiểm tra CSP formulation, Hall's marriage condition trong Bipartite matching GAC, Forward Checking phục hồi miền, giải nghiệm và tính hiệu quả của heuristic MRV).
-- **Tổng cộng: 30/30 PASSED (100%) trong ~0.25 giây.**
+*(Hoac `pip install -r requirements.txt` neu dang dung ben trong thu muc `source/`).*
 
 ---
 
-## 📊 6. SỔ TAY THỰC NGHIỆM (JUPYTER NOTEBOOKS)
+## HUONG DAN KHOI CHAY NHANH (QUICK START)
 
-Các file sổ tay thực nghiệm đã được chạy và lưu sẵn đầy đủ kết quả, bảng biểu số liệu và biểu đồ:
-- `source/task1_nqueens/experiments.ipynb`: So sánh số lượng mệnh đề CNF (Sequential Counter giảm 86% clauses ở $N=50$) và số bước lặp Min-Conflicts (Heuristic đề xuất nhanh hơn 22 lần ở $N=1000$).
-- `source/task2_tank/experiments.ipynb`: So sánh 4 cấu hình đối kháng (Alpha-Beta cắt tỉa 70% số node so với Minimax ở $d=2$; Heuristic đạt tỉ lệ thắng 92%).
-- `source/task3_kakuro/experiments.ipynb`: Đánh giá GAC/MAC trên các đề 3x3, 5x5 và Complex Test Case (MAC giảm từ 6,468 node xuống còn 12 node và 0 lần quay lui trên đề 5x5).
+### Cach 1: Khoi chay Master Arcade Hub (Khuyen nghi)
+Chay 1 lenh duy nhat de mo bang dieu khien do hoa trung tam tich hop ca 3 Task, bieu do thuc nghiem va che do **1-Click Pipeline Test**:
+
+```bash
+python source/main.py
+```
+
+Hoac chay truc tiep che do tu dong kiem tra toan bo 3 Task ngay khi mo:
+
+```bash
+python source/main.py --1click
+```
+
+*(Tren Windows co the nhay dup chuot vao file `run.bat` hoac `run_1click.bat`).*
 
 ---
 
+### Cach 2: Khoi chay Giao dien Do hoa (GUI) rieng cho tung Task
+
+```bash
+# Giao dien Task 1 (N-Queens Visualizer)
+python source/task1_nqueens/gui.py
+
+# Giao dien Task 2 (Battle Tank Arena)
+python source/task2_tank/gui.py
+
+# Giao dien Task 3 (Kakuro Step-by-Step CSP Visualizer)
+python source/task3_kakuro/gui.py
+```
+
+---
+
+### Cach 3: Chay qua Giao dien Dong lenh (CLI / Headless)
+
+#### 1. Task 1 (N-Queens)
+```bash
+# Giai N-Queens N=8 bang SAT Glucose3 voi ma hoa Sequential Counter
+python source/task1_nqueens/main.py -n 8 -m sat_seq
+
+# Giai N-Queens N=100 bang Heuristic Min-Conflicts
+python source/task1_nqueens/main.py -n 100 -m mc_heuristic
+```
+
+#### 2. Task 2 (Battle Tank)
+```bash
+# Mo phong tran dau Headless giua Heuristic Alpha-Beta (P1) va RandomAgent (P2)
+python source/task2_tank/main.py --headless --p1 heuristic_ab --p2 random --depth 2 --turns 100
+
+# Mo phong tran dau giua 2 Custom Agents: Guardian (P1) vs Rusher (P2)
+python source/task2_tank/main.py --headless --p1 guardian --p2 rusher --turns 80
+```
+
+#### 3. Task 3 (Kakuro CSP)
+```bash
+# Giai de 5x5 bang Backtracking + MAC + MRV + LCV
+python source/task3_kakuro/main.py --puzzle source/task3_kakuro/puzzles/example_5x5.txt --strategy mac
+
+# Giai de 9x9 phuc tap va so sanh toan bo cac chien luoc CSP
+python source/task3_kakuro/main.py --puzzle source/task3_kakuro/puzzles/complex_9x9.txt --compare
+```
+
+---
+
+## KIEM THU TU DONG (UNIT TESTS) VA THUC NGHIEM
+
+### 1. Chay bo Unit Tests (36/36 tests)
+He thong bao gom **36 unit tests** kiem thu toan dien logic cua ca 3 Task (CNF encoding, SAT solver, Min-Conflicts, Tank physics, 3-cell bullet flight, state hashing, 4 custom agents, Kakuro parser, GAC bipartite matching, FC/MAC restoration):
+
+```bash
+python -m pytest source/ -v
+```
+
+### 2. Chay lai cac Jupyter Notebooks Thuc nghiem
+Ba file `experiments.ipynb` trong tung thu muc task chua toan bo so lieu va bieu do trong bao cao:
+- `source/task1_nqueens/experiments.ipynb`
+- `source/task2_tank/experiments.ipynb`
+- `source/task3_kakuro/experiments.ipynb`

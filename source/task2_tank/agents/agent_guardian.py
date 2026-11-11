@@ -1,8 +1,7 @@
 import random
-from collections import deque
 from task2_tank.agents.base_agent import BaseAgent
 from task2_tank.engine import GameEngine
-from task2_tank.entities import Action, Direction
+from task2_tank.entities import Action
 from task2_tank.game_state import GameState
 from task2_tank.heuristic import TankEvaluator
 
@@ -44,7 +43,9 @@ class GuardianAgent(BaseAgent):
                     continue
                 w = state.walls.get(cand)
                 if w and w.is_alive:
-                    continue  # Khong di vao tuong
+                    # Chi bo qua neu la tuong thep hoac xe da quay mat san ve huong tuong gach
+                    if w.is_steel or tank.direction == d:
+                        continue
                 if (state.bases.get(0) and state.bases.get(0).pos == cand) or (state.bases.get(1) and state.bases.get(1).pos == cand):
                     continue
 
@@ -57,6 +58,10 @@ class GuardianAgent(BaseAgent):
                     a_min if player_id == 0 else a_max,
                 )
                 score = self._eval_guardian(next_s, player_id)
+                if a_max == Action.STAY:
+                    score -= 25.0
+                elif a_max == Action.FIRE and not TankEvaluator.has_useful_fire_target(state, player_id):
+                    score -= 30.0
                 if score < min_val:
                     min_val = score
             if min_val > best_score:
@@ -90,7 +95,7 @@ class GuardianAgent(BaseAgent):
         score += (my_tank.hp - (opp_tank.hp if opp_tank else 0)) * 25.0
         score += my_base.hp * 60.0 - (opp_base.hp if opp_base else 0) * 30.0
 
-        # 2. Khoang cach giu chan gan Base phe nha (Patrol Perimeter <= 3 cells)
+        # 2. Khoang cach giu chan gan Base phe nha (Patrol Perimeter <= 4 cells)
         dist_to_my_base = abs(my_tank.r - my_base.r) + abs(my_tank.c - my_base.c)
         if dist_to_my_base > 4:
             score -= (dist_to_my_base - 4) * 15.0  # Phat khi chay qua xa can cu
@@ -105,10 +110,15 @@ class GuardianAgent(BaseAgent):
             if TankEvaluator._has_line_of_fire(state, my_tank.pos, my_tank.direction, opp_tank.pos):
                 score += 80.0
 
-        # 4. Triet tieu dan dich bay vao can cu
+        # 4. Triet tieu dan dich bay vao can cu va thuong khi dan minh de doa dich
         for b in state.bullets:
-            if b.is_active and b.owner_id != player_id:
-                if TankEvaluator._bullet_threatens_target(b, my_base.pos):
+            if not b.is_active:
+                continue
+            if b.owner_id != player_id:
+                if TankEvaluator._bullet_threatens_target(state, b, my_base.pos):
                     score -= 150.0  # Nguy hiem cuc do
+            else:
+                if (opp_tank and TankEvaluator._bullet_threatens_target(state, b, opp_tank.pos)) or (opp_base and TankEvaluator._bullet_threatens_target(state, b, opp_base.pos)):
+                    score += 55.0
 
         return max(-899.0, min(899.0, score))

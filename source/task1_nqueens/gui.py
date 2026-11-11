@@ -11,6 +11,8 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from task1_nqueens.board import NQueensBoard
 from task1_nqueens.cnf_encoder import PairwiseEncoder, SequentialCounterEncoder
 from task1_nqueens.min_conflicts import HeuristicMinConflicts, StandardMinConflicts
@@ -72,6 +74,16 @@ class NQueensGUI:
         self.is_running = True
         self.buttons: dict[str, pygame.Rect] = {}
         self.logs: list[str] = ["He thong san sang! Nhan nut SOLVE tren man hinh de giai."]
+
+        # Tai anh quan Hau (transparent PNG) va bo nho dem theo kich thuoc o co
+        self.queen_img_raw: pygame.Surface | None = None
+        self._queen_img_cache: dict[int, pygame.Surface] = {}
+        queen_asset_path = os.path.join(os.path.dirname(__file__), "assets", "queen.png")
+        if os.path.exists(queen_asset_path):
+            try:
+                self.queen_img_raw = pygame.image.load(queen_asset_path)
+            except Exception:
+                self.queen_img_raw = None
 
         self._init_board_state()
 
@@ -254,7 +266,6 @@ class NQueensGUI:
 
         # 1. Ve ban co vua N x N
         n = self.current_n
-        total_conflicts = sum(self.conflicts_per_col) // 2
 
         for r in range(n):
             for c in range(n):
@@ -295,9 +306,27 @@ class NQueensGUI:
 
     def _draw_queen(self, rect: pygame.Rect, is_conflict: bool):
         cx, cy = rect.center
+
+        if self.queen_img_raw is not None:
+            # Vien sang nhe hoac canh bao xung dot phia sau quan Hau
+            if is_conflict:
+                halo_radius = max(5, int(rect.width * 0.42))
+                pygame.draw.circle(self.screen, (231, 76, 60), (cx, cy), halo_radius, 2)
+
+            icon_size = max(12, int(rect.width * 0.86))
+            scaled_queen = self._queen_img_cache.get(icon_size)
+            if scaled_queen is None:
+                surf = self.queen_img_raw.convert_alpha() if pygame.display.get_init() else self.queen_img_raw
+                scaled_queen = pygame.transform.smoothscale(surf, (icon_size, icon_size))
+                self._queen_img_cache[icon_size] = scaled_queen
+
+            img_rect = scaled_queen.get_rect(center=(cx, cy))
+            self.screen.blit(scaled_queen, img_rect)
+            return
+
         radius = max(6, int(rect.width * 0.38))
 
-        # Hinh tron nen quan hau
+        # Hinh tron nen quan hau (fallback)
         bg_col = self.COLOR_CONFLICT if is_conflict else self.COLOR_QUEEN
         border_col = (180, 40, 30) if is_conflict else self.COLOR_QUEEN_BORDER
         pygame.draw.circle(self.screen, bg_col, (cx, cy), radius)
@@ -420,18 +449,18 @@ class NQueensGUI:
         self.screen.blit(comp_title, (panel_x + 18, y))
         y += 20
 
-        # Bar 1: Heuristic vs Standard (Số bước tại N=100)
-        b1_lbl = self.font_mini.render("Min-Conflicts: So buoc tai N=100", True, self.COLOR_TEXT)
+        # Bar 1: Heuristic vs Standard (Số bước tại N=1000)
+        b1_lbl = self.font_mini.render("Min-Conflicts: So buoc tai N=1000", True, self.COLOR_TEXT)
         self.screen.blit(b1_lbl, (panel_x + 18, y))
         y += 16
         # Ve bar Heuristic
-        pygame.draw.rect(self.screen, (46, 204, 113), (panel_x + 18, y, 20, 10), border_radius=2)
-        h_txt = self.font_mini.render("Heuristic: 69 buoc (Giam 90%)", True, (46, 204, 113))
-        self.screen.blit(h_txt, (panel_x + 44, y - 2))
+        pygame.draw.rect(self.screen, (46, 204, 113), (panel_x + 18, y, 16, 10), border_radius=2)
+        h_txt = self.font_mini.render("Heuristic: 31.6 buoc (Giam 95.6%)", True, (46, 204, 113))
+        self.screen.blit(h_txt, (panel_x + 40, y - 2))
         y += 14
         # Ve bar Standard
         pygame.draw.rect(self.screen, (231, 76, 60), (panel_x + 18, y, 160, 10), border_radius=2)
-        s_txt = self.font_mini.render("Standard: 714 buoc", True, self.COLOR_TEXT_MUTED)
+        s_txt = self.font_mini.render("Standard: 713.6 buoc", True, self.COLOR_TEXT_MUTED)
         self.screen.blit(s_txt, (panel_x + 184, y - 2))
         y += 20
 
@@ -440,11 +469,11 @@ class NQueensGUI:
         self.screen.blit(b2_lbl, (panel_x + 18, y))
         y += 16
         pygame.draw.rect(self.screen, (52, 152, 219), (panel_x + 18, y, 35, 10), border_radius=2)
-        seq_txt = self.font_mini.render("Seq Counter: 28k (Giam 86%)", True, (52, 152, 219))
+        seq_txt = self.font_mini.render("Seq Counter: 28.9k (Giam 86%)", True, (52, 152, 219))
         self.screen.blit(seq_txt, (panel_x + 60, y - 2))
         y += 14
         pygame.draw.rect(self.screen, (155, 89, 182), (panel_x + 18, y, 180, 10), border_radius=2)
-        pw_txt = self.font_mini.render("Pairwise: 203k clauses", True, self.COLOR_TEXT_MUTED)
+        pw_txt = self.font_mini.render("Pairwise: 203.4k clauses", True, self.COLOR_TEXT_MUTED)
         self.screen.blit(pw_txt, (panel_x + 204, y - 2))
         y += 24
 
@@ -459,3 +488,10 @@ class NQueensGUI:
             log_line = self.font_mini.render(line[:46], True, self.COLOR_TEXT_MUTED)
             self.screen.blit(log_line, (panel_x + 18, y))
             y += 16
+
+
+if __name__ == "__main__":
+    gui = NQueensGUI()
+    gui.run()
+    pygame.quit()
+

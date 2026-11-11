@@ -1,8 +1,7 @@
 import random
-from collections import deque
 from task2_tank.agents.base_agent import BaseAgent
 from task2_tank.engine import GameEngine
-from task2_tank.entities import Action, Direction
+from task2_tank.entities import Action
 from task2_tank.game_state import GameState
 from task2_tank.heuristic import TankEvaluator
 
@@ -42,7 +41,7 @@ class AdaptiveAgent(BaseAgent):
         best_actions = []
 
         for a_max in legal_actions:
-            # Phat/bo qua cac hanh dong dam vao tuong hoac can cu
+            # Phat/bo qua cac hanh dong dam vao tuong thep hoac can cu
             d = a_max.to_direction()
             if d:
                 cand = (tank.r + d.dr, tank.c + d.dc)
@@ -50,7 +49,8 @@ class AdaptiveAgent(BaseAgent):
                     continue
                 w = state.walls.get(cand)
                 if w and w.is_alive:
-                    continue  # Khong bao gio di vao tuong
+                    if w.is_steel or tank.direction == d:
+                        continue  # Bo qua tuong thep hoac khi da xoay mat san vao tuong gach
                 b0 = state.bases.get(0)
                 b1 = state.bases.get(1)
                 if (b0 and b0.pos == cand) or (b1 and b1.pos == cand):
@@ -67,6 +67,8 @@ class AdaptiveAgent(BaseAgent):
                 score = self._eval_mode(next_s, player_id, mode)
                 if a_max == Action.STAY:
                     score -= 30.0
+                elif a_max == Action.FIRE and not TankEvaluator.has_useful_fire_target(state, player_id):
+                    score -= 35.0
                 if score < min_val:
                     min_val = score
             if min_val > best_score:
@@ -137,10 +139,23 @@ class AdaptiveAgent(BaseAgent):
             if my_aim_opp:
                 score += 80.0
         else:  # FLANK
-            score -= dist_opp_base * 4.0
+            score -= dist_opp_base * 6.0
+            if my_aim_base:
+                score += 90.0
             if my_aim_opp and not opp_aim_me:
                 score += 90.0
             if opp_aim_me:
                 score -= 60.0
+
+        # Thuong khi dan cua minh de doa dich/can cu dich, phat khi dan dich de doa minh
+        for b in state.bullets:
+            if not b.is_active:
+                continue
+            if b.owner_id == player_id:
+                if (opp_tank and TankEvaluator._bullet_threatens_target(state, b, opp_tank.pos)) or TankEvaluator._bullet_threatens_target(state, b, opp_base.pos):
+                    score += 60.0
+            else:
+                if TankEvaluator._bullet_threatens_target(state, b, my_tank.pos) or (my_base and TankEvaluator._bullet_threatens_target(state, b, my_base.pos)):
+                    score -= 80.0
 
         return max(-899.0, min(899.0, score))
