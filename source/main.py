@@ -909,9 +909,8 @@ class MasterDashboard:
                     "2. Vu Giang Huy - MSSV: 524H0095",
                     "3. Le Hoang Minh Khoi - MSSV: 524H0102",
                 ]),
-                ("Trang thai Nop bai & Kiem dinh:", [
-                    "Pytest Unit Tests: 36/36 tests PASS (100% tinh dung dan tren toan bo 3 Task).",
-                    "Dong goi san sang 3 file zip rieng biet cho 3 thanh vien bang script package_submission.py.",
+                ("Trang thai Kiem dinh He thong:", [
+                    "Pytest Unit Tests: 38/38 tests PASS (100% tinh dung dan tren toan bo 3 Task).",
                 ]),
             ]
             launch_id = "modal_ok"

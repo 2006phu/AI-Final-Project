@@ -160,6 +160,11 @@ class TankBattleGUI:
 
         self.logs: list[str] = ["Battle City Engine San Sang! Nhan [PLAY] de bat dau tran chien."]
 
+        # Cac muc lua chon so buoc toi da (Max Turns)
+        self.max_turns_options = [50, 100, 150, 200, 300, 500, 1000]
+        self.current_turns_idx = 3  # Mac dinh 200 buoc
+        self.max_turns = self.max_turns_options[self.current_turns_idx]
+
         self.p1_agent = self._instantiate_agent(self.current_p1_idx)
         self.p2_agent = self._instantiate_agent(self.current_p2_idx)
 
@@ -201,11 +206,12 @@ class TankBattleGUI:
 
     def _load_current_map(self):
         map_path = self.available_maps[self.current_map_idx][1]
-        self.state = GameState.from_file(map_path)
+        max_turns = getattr(self, "max_turns", 200)
+        self.state = GameState.from_file(map_path, max_turns=max_turns)
         self.grid_width = self.state.cols * self.CELL_SIZE
         self.grid_height = self.state.rows * self.CELL_SIZE
         self.window_width = self.grid_width + self.PANEL_WIDTH
-        self.window_height = max(self.grid_height, 670)
+        self.window_height = max(self.grid_height, 720)
 
         self.screen = pygame.display.set_mode((self.window_width, self.window_height))
         pygame.display.set_caption("Tank Battle Simulator - Adversarial Search (AI Final Project)")
@@ -380,6 +386,18 @@ class TankBattleGUI:
 
         elif btn_id == "speed_up":
             self.fps = min(60, self.fps + 2)
+
+        elif btn_id == "turns_prev":
+            self.current_turns_idx = (self.current_turns_idx - 1) % len(self.max_turns_options)
+            self.max_turns = self.max_turns_options[self.current_turns_idx]
+            self.state.max_turns = self.max_turns
+            self.add_log(f"Gioi han luot: {self.max_turns} turns")
+
+        elif btn_id == "turns_next":
+            self.current_turns_idx = (self.current_turns_idx + 1) % len(self.max_turns_options)
+            self.max_turns = self.max_turns_options[self.current_turns_idx]
+            self.state.max_turns = self.max_turns
+            self.add_log(f"Gioi han luot: {self.max_turns} turns")
 
         elif btn_id == "map_prev":
             self.current_map_idx = (self.current_map_idx - 1) % len(self.available_maps)
@@ -870,9 +888,20 @@ class TankBattleGUI:
         y += 42
 
         # Toc do FPS
-        self.screen.blit(self.font.render(f"Toc do: {self.fps} FPS (Turn: {self.state.turn_count}/{self.state.max_turns})", True, self.COLOR_TEXT), (panel_x + 18, y + 4))
+        self.screen.blit(self.font.render(f"Toc do: {self.fps} FPS", True, self.COLOR_TEXT), (panel_x + 18, y + 4))
         self._draw_button("speed_down", "- FPS", pygame.Rect(panel_x + panel_w - 145, y, 58, 26))
         self._draw_button("speed_up", "+ FPS", pygame.Rect(panel_x + panel_w - 80, y, 58, 26))
+        y += 32
+
+        # Dieu chinh So buoc toi da (Max Turns)
+        turn_str = f"Luot: {self.state.turn_count}/{self.state.max_turns}"
+        self.screen.blit(self.font.render(f"Gioi han luot ({turn_str}):", True, self.COLOR_TEXT), (panel_x + 18, y + 4))
+        self._draw_button("turns_prev", "<", pygame.Rect(panel_x + panel_w - 145, y, 28, 26))
+        turns_box = pygame.Rect(panel_x + panel_w - 113, y, 58, 26)
+        pygame.draw.rect(self.screen, self.COLOR_PANEL_CARD, turns_box, border_radius=4)
+        t_val = self.font_bold.render(str(self.state.max_turns), True, self.COLOR_GOLD)
+        self.screen.blit(t_val, t_val.get_rect(center=turns_box.center))
+        self._draw_button("turns_next", ">", pygame.Rect(panel_x + panel_w - 51, y, 28, 26))
         y += 34
 
         # 6. LUOC DO SO SANH THUAT TOAN TRUC QUAN (Pruning Comparison Bar)
