@@ -2,10 +2,6 @@ import os
 import pytest
 from task2_tank.agents.random_agent import RandomAgent
 from task2_tank.agents.search_agent import SearchAgent
-from task2_tank.agents.agent_guardian import GuardianAgent
-from task2_tank.agents.agent_rusher import RusherAgent
-from task2_tank.agents.agent_flanker import FlankerAgent
-from task2_tank.agents.agent_adaptive import AdaptiveAgent
 from task2_tank.engine import GameEngine
 from task2_tank.entities import Action, Direction, Tank, Base, Wall, Bullet
 from task2_tank.game_state import GameState
@@ -84,9 +80,25 @@ def test_search_agent_equivalence():
 def test_dynamic_agent_discovery():
     agents_dir = os.path.join(os.path.dirname(__file__), "..", "agents")
     custom = discover_custom_agents(agents_dir)
-    # Khong nem ngoai le, tra ve dict chua 4 custom agents
+    # Khong nem ngoai le, tra ve dict khi quet agents_dir
     assert isinstance(custom, dict)
-    assert len(custom) == 4
+
+
+def test_tactical_clash_map_structure_and_symmetry():
+    map_path = os.path.join(os.path.dirname(__file__), "..", "maps", "tactical_clash_13x13.txt")
+    assert os.path.exists(map_path)
+    state = GameState.from_file(map_path)
+    assert state.rows == 13 and state.cols == 13
+    assert len(state.tanks) == 2
+    assert len(state.bases) == 2
+    assert 0 in state.bases and state.bases[0].pos == (11, 6)
+    assert 1 in state.bases and state.bases[1].pos == (1, 6)
+    # Co rung cay o hai ben canh
+    assert len(state.forests) > 0
+    # Co tuong thep va tuong gach
+    steel_count = sum(1 for w in state.walls.values() if w.is_steel)
+    brick_count = sum(1 for w in state.walls.values() if not w.is_steel)
+    assert steel_count > 0 and brick_count > 0
 
 
 def test_forest_tile_passable_and_bullet_passthrough():
@@ -112,7 +124,7 @@ def test_forest_tile_passable_and_bullet_passthrough():
     assert shoot_s.tanks[1].hp < Tank.INITIAL_HP
 
 
-def test_all_custom_agents_with_active_enemy_bullets():
+def test_adversarial_search_agents_with_active_enemy_bullets():
     state = GameState(9, 9)
     state.tanks[0] = Tank(0, r=7, c=4, direction=Direction.UP)
     state.tanks[1] = Tank(1, r=1, c=4, direction=Direction.DOWN)
@@ -121,8 +133,13 @@ def test_all_custom_agents_with_active_enemy_bullets():
     # Vien dan cua doi phuong dang bay thang ve phia xe va can cu cua Player 0
     state.bullets.append(Bullet(owner_id=1, r=4, c=4, direction=Direction.DOWN))
 
-    for agent_cls in (GuardianAgent, RusherAgent, FlankerAgent, AdaptiveAgent):
-        agent = agent_cls(depth=2)
+    agents = [
+        SearchAgent.create_minimax(depth=2),
+        SearchAgent.create_alpha_beta(depth=2),
+        SearchAgent.create_heuristic_minimax(depth=2),
+        SearchAgent.create_heuristic_alpha_beta(depth=2),
+    ]
+    for agent in agents:
         act0 = agent.get_action(state, player_id=0)
         act1 = agent.get_action(state, player_id=1)
         assert isinstance(act0, Action)
@@ -192,14 +209,12 @@ def test_agents_can_rotate_toward_destructible_brick_wall():
     state.walls[(2, 1)] = Wall(2, 1, hp=3, is_steel=True)
     state.walls[(3, 2)] = Wall(3, 2, hp=3, is_steel=True)
 
-    # RusherAgent va SearchAgent phai xoay nong phao len tren (MOVE_UP) de pha tuong gach thay vi ket cung STAY/MOVE_RIGHT
-    rusher = RusherAgent(depth=2)
-    act_r = rusher.get_action(state, player_id=0)
-    assert act_r == Action.MOVE_UP
-
+    # SearchAgent phai nhan dien va xoay nong phao len tren (MOVE_UP) de pha tuong gach thay vi ket cung STAY/MOVE_RIGHT
     search_ab = SearchAgent.create_heuristic_alpha_beta(depth=2)
     ordered = search_ab._order_actions(state, GameEngine.get_legal_actions(state, 0), player_id=0)
     assert ordered[0] == Action.MOVE_UP
+    act_ab = search_ab.get_action(state, player_id=0)
+    assert act_ab == Action.MOVE_UP
 
 
 

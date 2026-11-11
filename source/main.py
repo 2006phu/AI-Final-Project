@@ -795,7 +795,7 @@ class MasterDashboard:
             specs = [
                 ("Mo hinh bai toan", "Zero-Sum 2-Player Game"),
                 ("Cau hinh Search", "Minimax & Alpha-Beta (d=2)"),
-                ("Chien thuat AI", "Rusher, Guardian, Flanker, Adapt"),
+                ("Chien thuat doi khang", "Minimax, Alpha-Beta, Heuristic AB/MM"),
                 ("Dia hinh Battle City", "Gach, Thep, Rung cay xanh T"),
                 ("Phat hien be tac", "Anti-Stalemate Flanking Logic"),
             ]

@@ -26,7 +26,7 @@ Do an trien khai day du 3 nhom ky thuat nen tang cua Tri tue Nhan tao tren 3 bai
 
 2. **Task 2 - Tro choi Chien dau Xe tang Battle Tank (Zero-Sum Game & Adversarial Search):**
    - Mo hinh hoa tro choi doi khang 2 nguoi choi tren luoi toan hoc Zero-Sum Game voi day du co che vat ly: dan bay 3 o/chu ky kiem tra va cham tung o (cell-by-cell), hai vien dan doi dau triet tieu nhau, tuong gach 3 HP, tuong thep bat tu (`#`) va dia hinh rung cay (`T`) an nap nguy trang.
-   - Cai dat va doi sanh 4 cau hinh tim kiem doi khang: **Minimax**, **Alpha-Beta Pruning**, **Heuristic Minimax**, va **Heuristic Alpha-Beta** (ung dung `BFS Pathfinding`, `Move Ordering`, `Transposition Table`, va co che chong be tac `Anti-Stalemate Flanking`), cung 4 custom agents chien thuat (`Rusher`, `Guardian`, `Flanker`, `Adaptive`).
+   - Cai dat va doi sanh 4 cau hinh tim kiem doi khang: **Minimax**, **Alpha-Beta Pruning**, **Heuristic Minimax**, va **Heuristic Alpha-Beta** (ung dung `BFS Pathfinding`, `Move Ordering`, `Transposition Table`, va co che chong be tac `Anti-Stalemate Flanking` tren cac ban do chien thuat da dang).
 
 3. **Task 3 - Tro choi Kakuro (Constraint Satisfaction Problem & Constraint Propagation):**
    - Mo hinh hoa Kakuro duoi dang bai toan CSP voi bang phan tich to hop (`CombinationTable`) tien xu ly mien gia tri ban dau.
@@ -142,8 +142,8 @@ python source/task1_nqueens/main.py -n 100 -m mc_heuristic
 # Mo phong tran dau Headless giua Heuristic Alpha-Beta (P1) va RandomAgent (P2)
 python source/task2_tank/main.py --headless --p1 heuristic_ab --p2 random --depth 2 --turns 100
 
-# Mo phong tran dau giua 2 Custom Agents: Guardian (P1) vs Rusher (P2)
-python source/task2_tank/main.py --headless --p1 guardian --p2 rusher --turns 80
+# Mo phong tran dau giua Heuristic Alpha-Beta (P1) va Minimax (P2) tren ban do chien thuat Tactical Clash
+python source/task2_tank/main.py --headless --map source/task2_tank/maps/tactical_clash_13x13.txt --p1 hab --p2 mm --turns 100
 ```
 
 #### 3. Task 3 (Kakuro CSP)
