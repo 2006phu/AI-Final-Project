@@ -14,7 +14,7 @@ URL Video Demo: https://youtu.be/placeholder-demo-ai-final-nhom08
 - Gioi thieu tong quan do an va Dashboard trung tam (1-Click Run).
 - Task 1: Mo phong N-Queens ban co truc quan, SAT Glucose3 va Min-Conflicts.
 - Task 2: Mo phong Tank Battle, thi dau giua Heuristic Alpha-Beta va Minimax.
-- Task 3: Mo phong Kakuro CSP voi luoi but chi 3x3 (pencil-mark), AC-3 va MAC.
+- Task 3: Mo phong Kakuro CSP voi luoi but chi 3x3 (pencil-mark), GAC (Bipartite Matching) va MAC.
 - Giai thich luoc do phan tich, so sanh hieu nang va phong van hoi dong.
 
 ================================================================================
@@ -35,5 +35,5 @@ Thanh vien 2:
 Thanh vien 3:
 - Ho va ten: Le Hoang Minh Khoi
 - MSSV: 524H0102
-- Nhiem vu: Phu trach Task 3 (Kakuro CSP Formulation, Lan truyen rang buoc GAC/AC-3, Forward Checking, MAC, Heuristics MRV+Degree+LCV, Pencil-mark Visualizer).
+- Nhiem vu: Phu trach Task 3 (Kakuro CSP Formulation, Lan truyen rang buoc GAC (Bipartite Matching), Forward Checking, MAC, Heuristics MRV+Degree+LCV, Pencil-mark Visualizer).
 - Muc do hoan thanh: 100%

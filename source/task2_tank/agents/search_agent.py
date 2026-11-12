@@ -229,8 +229,17 @@ class SearchAgent(BaseAgent):
         alpha: float,
         beta: float,
     ) -> float:
+        """Thuat toan tim kiem Adversarial Search (Minimax hoac Alpha-Beta Pruning).
+        
+        Giai thich do sau (Depth):
+        Do sau tim kiem duoc tinh bang don vi luot di rieng le (plies), trong do 2 action units
+        (plies) bieu dien mot chu ky ra quyet dinh dong thoi hoan chinh giua ca 2 nguoi choi
+        (1 simultaneous decision cycle involving both players). Khi goi de quy xuong chu ky tiep
+        theo, do sau duoc giam di 2 (depth - 2).
+        """
         self.nodes_explored += 1
         alpha_orig = alpha
+        beta_orig = beta
 
         # 1. Kiem tra trang thai ket thuc (Terminal)
         if GameEngine.is_terminal(state):
@@ -326,7 +335,7 @@ class SearchAgent(BaseAgent):
         if self.use_transposition and table_key:
             if max_val <= alpha_orig:
                 flag = TTFlag.UPPERBOUND
-            elif max_val >= beta:
+            elif max_val >= beta_orig:
                 flag = TTFlag.LOWERBOUND
             else:
                 flag = TTFlag.EXACT

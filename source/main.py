@@ -733,7 +733,7 @@ class MasterDashboard:
         pygame.draw.rect(self.screen, (16, 20, 28), sum_box, border_radius=6)
         pygame.draw.rect(self.screen, (38, 48, 68), sum_box, 1, border_radius=6)
         if task_num == 1:
-            s_txt = "Ket luan: Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts giam so buoc tim kiem gap 22.5 lan!"
+            s_txt = "Ket luan: Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts giam so buoc tim kiem gap 22.6 lan!"
         elif task_num == 2:
             s_txt = "Ket luan: Alpha-Beta cat tia 70% so nut giu nguyen tinh toi uu. Heuristic BFS va boc suon triet tieu be tac!"
         else:
@@ -961,14 +961,16 @@ class MasterDashboard:
         mc_solver = HeuristicMinConflicts(8, seed=42, tabu_size=4)
         mc_res = mc_solver.solve(max_steps=1000)
         mc_valid = board8.is_valid(mc_res.solution or []) if mc_res.is_solved else False
+        t1_is_pass = bool(sat_valid and mc_valid)
 
-        # 2. TASK 2: Tank Battle Game (15 turns simulation)
+        # 2. TASK 2: Tank Battle Game (15 turns simulation: Heuristic Alpha-Beta vs Heuristic Minimax)
         map_path = os.path.join(SOURCE_DIR, "task2_tank", "maps", "classic_forest_13x13.txt")
         if not os.path.exists(map_path):
             map_path = os.path.join(SOURCE_DIR, "task2_tank", "maps", "arena_11x11.txt")
         tank_state = GameState.from_file(map_path)
+        # So sanh cong bang giua Heuristic Alpha-Beta va Heuristic Minimax (cung ham heuristic, chi khac Alpha-Beta)
         p1 = SearchAgent.create_heuristic_alpha_beta(depth=2)
-        p2 = SearchAgent.create_minimax(depth=2)
+        p2 = SearchAgent.create_heuristic_minimax(depth=2)
         p1_nodes = 0
         p2_nodes = 0
         t0_tank = time.perf_counter()
@@ -984,6 +986,7 @@ class MasterDashboard:
 
         t_tank_ms = (time.perf_counter() - t0_tank) * 1000.0
         pruning_ratio = round((1.0 - p1_nodes / p2_nodes) * 100.0, 1) if p2_nodes > 0 else 0.0
+        t2_is_pass = bool(tank_state.turn_count > 0 and ((0 in tank_state.tanks and tank_state.tanks[0].is_alive) or (1 in tank_state.tanks and tank_state.tanks[1].is_alive) or GameEngine.is_terminal(tank_state)))
 
         # 3. TASK 3: Kakuro CSP (example_5x5.txt voi Backtracking + MAC)
         pz_path = os.path.join(SOURCE_DIR, "task3_kakuro", "puzzles", "example_5x5.txt")
@@ -991,11 +994,14 @@ class MasterDashboard:
         k_solver = BacktrackingSolver(puzzle, strategy="mac", use_mrv=True, use_lcv=True)
         k_res = k_solver.solve()
         k_valid, _ = puzzle.is_solution_valid(k_res.solution)
+        t3_is_pass = bool(k_res.is_solved and k_valid)
 
         total_time_ms = (time.perf_counter() - t_start_all) * 1000.0
+        all_pass = bool(t1_is_pass and t2_is_pass and t3_is_pass)
 
         self.demo_results = {
             "total_time_ms": round(total_time_ms, 1),
+            "all_pass": all_pass,
             "task1": {
                 "sat_clauses": sat_res.clauses_count,
                 "sat_vars": sat_res.variables_count,
@@ -1004,6 +1010,7 @@ class MasterDashboard:
                 "mc_steps": mc_res.steps_taken,
                 "mc_time_ms": round(mc_res.solve_time_ms, 2),
                 "mc_valid": mc_valid,
+                "is_pass": t1_is_pass,
             },
             "task2": {
                 "p1_nodes": p1_nodes,
@@ -1011,7 +1018,8 @@ class MasterDashboard:
                 "pruning_ratio": pruning_ratio,
                 "turns_simulated": tank_state.turn_count,
                 "sim_time_ms": round(t_tank_ms, 1),
-                "game_state": "Dang thi dau (Running)" if not GameEngine.is_terminal(tank_state) else "Ket thuc (Terminal)",
+                "is_pass": t2_is_pass,
+                "game_state": "Dang thi dau (Hop le)" if not GameEngine.is_terminal(tank_state) else "Ket thuc tran dau",
             },
             "task3": {
                 "is_solved": k_res.is_solved,
@@ -1020,6 +1028,7 @@ class MasterDashboard:
                 "backtracks": k_res.backtracks,
                 "prunings": k_res.prunings_count,
                 "solve_time_ms": round(k_res.solve_time_ms, 2),
+                "is_pass": t3_is_pass,
             },
         }
 
@@ -1039,7 +1048,10 @@ class MasterDashboard:
         self.screen.blit(t_title, (185, 20))
 
         tot_time = self.demo_results.get("total_time_ms", 0.0) if self.demo_results else 0.0
-        t_sub = self.font_subtitle.render(f"Tong thoi gian thuc thi toan bo pipeline: {tot_time} ms  |  Trang thai: 100% PASS", True, self.COLOR_GREEN)
+        all_pass = self.demo_results.get("all_pass", False) if self.demo_results else False
+        status_banner = "Trang thai: 100% PASS" if all_pass else "Trang thai: CANH BAO (WARNING)"
+        status_color = self.COLOR_GREEN if all_pass else (231, 76, 60)
+        t_sub = self.font_subtitle.render(f"Tong thoi gian thuc thi toan bo pipeline: {tot_time} ms  |  {status_banner}", True, status_color)
         self.screen.blit(t_sub, (185, 48))
 
         avail_w = self.WINDOW_WIDTH - 110
@@ -1049,6 +1061,7 @@ class MasterDashboard:
 
         # The Task 1
         d1 = self.demo_results["task1"] if self.demo_results else {}
+        t1_valid_str = "Hop le 100% [PASS]" if d1.get("is_pass", False) else "Khong hop le [FAIL]"
         self._render_demo_card(
             rect=pygame.Rect(35, y_top, col_w, col_h),
             badge="TASK 1: N-QUEENS",
@@ -1060,12 +1073,13 @@ class MasterDashboard:
                 ("Thoi gian SAT:", f"{d1.get('sat_time_ms', 0)} ms"),
                 ("Heuristic Min-Conflicts:", f"{d1.get('mc_steps', 0)} steps"),
                 ("Thoi gian Min-Conflicts:", f"{d1.get('mc_time_ms', 0)} ms"),
-                ("Nghiem N-Queens N=8:", "Hop le 100% [PASS]"),
+                ("Nghiem N-Queens N=8:", t1_valid_str),
             ],
-            callout="Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts giam buoc tim kiem 22.5 lan!",
+            callout="Sequential Counter giam 86% so menh de. Heuristic Min-Conflicts giam buoc tim kiem 22.6 lan!",
             btn_id="select_task1",
             btn_text="XEM CHI TIET TASK 1 >",
             btn_color=(39, 174, 96),
+            is_pass=d1.get("is_pass", False),
         )
 
         # The Task 2
@@ -1074,23 +1088,25 @@ class MasterDashboard:
             rect=pygame.Rect(35 + col_w + 20, y_top, col_w, col_h),
             badge="TASK 2: BATTLE TANK",
             badge_color=self.COLOR_ORANGE,
-            title="Alpha-Beta vs Minimax Game",
+            title="Heuristic Alpha-Beta vs Minimax",
             items=[
                 ("Mo phong thuc te:", f"{d2.get('turns_simulated', 0)} turns thi dau"),
-                ("Alpha-Beta (d=2) Nodes:", f"{d2.get('p1_nodes', 0)} nodes"),
-                ("Minimax (d=2) Nodes:", f"{d2.get('p2_nodes', 0)} nodes"),
+                ("Heuristic Alpha-Beta Nodes:", f"{d2.get('p1_nodes', 0)} nodes"),
+                ("Heuristic Minimax Nodes:", f"{d2.get('p2_nodes', 0)} nodes"),
                 ("Ti le cat tia Alpha-Beta:", f"{d2.get('pruning_ratio', 0)}% cat tia"),
                 ("Thoi gian 15 turns:", f"{d2.get('sim_time_ms', 0)} ms"),
-                ("Ket qua mo phong:", "Khong be tac [PASS]"),
+                ("Trang thai luot di:", f"{d2.get('game_state', 'Chua thi dau')} {'[PASS]' if d2.get('is_pass', False) else '[FAIL]'}"),
             ],
-            callout="Alpha-Beta cat bo 70% so nut. Heuristic BFS chong hoa va boc suon linh hoat!",
+            callout="Alpha-Beta cat bo khoang 70% so nut so voi Minimax cung ham Heuristic!",
             btn_id="select_task2",
             btn_text="XEM CHI TIET TASK 2 >",
             btn_color=(211, 84, 0),
+            is_pass=d2.get("is_pass", False),
         )
 
         # The Task 3
         d3 = self.demo_results["task3"] if self.demo_results else {}
+        t3_valid_str = "Chinh xac 100% [PASS]" if d3.get("is_pass", False) else "Khong chinh xac [FAIL]"
         self._render_demo_card(
             rect=pygame.Rect(35 + (col_w + 20) * 2, y_top, col_w, col_h),
             badge="TASK 3: KAKURO CSP",
@@ -1102,12 +1118,13 @@ class MasterDashboard:
                 ("Nodes duyet:", f"{d3.get('nodes', 0)} nodes"),
                 ("So lan quay lui:", f"{d3.get('backtracks', 0)} (0 Backtrack!)"),
                 ("Gia tri cat tia (GAC):", f"{d3.get('prunings', 0)} gia tri"),
-                ("Xac thuc nghiem:", "Chinh xac 100% [PASS]"),
+                ("Xac thuc nghiem:", t3_valid_str),
             ],
             callout="GAC va MAC triet tieu 100% nhanh cut, giai 1 mach voi 0 lan quay lui tren 5x5!",
             btn_id="select_task3",
             btn_text="XEM CHI TIET TASK 3 >",
             btn_color=(142, 68, 173),
+            is_pass=d3.get("is_pass", False),
         )
 
         # Bottom Action Bar
@@ -1115,7 +1132,7 @@ class MasterDashboard:
         pygame.draw.line(self.screen, self.COLOR_BORDER, (0, y_bottom), (self.WINDOW_WIDTH, y_bottom), 1)
         self._draw_button("demo_rerun", "CHAY LAI 1-CLICK RUN", pygame.Rect(35, y_bottom + 12, 240, 36), bg_color=(39, 174, 96))
 
-    def _render_demo_card(self, rect: pygame.Rect, badge: str, badge_color, title: str, items: list[tuple[str, str]], callout: str, btn_id: str, btn_text: str, btn_color):
+    def _render_demo_card(self, rect: pygame.Rect, badge: str, badge_color, title: str, items: list[tuple[str, str]], callout: str, btn_id: str, btn_text: str, btn_color, is_pass: bool = True):
         mouse_pos = pygame.mouse.get_pos()
         is_hover = rect.collidepoint(mouse_pos)
 
@@ -1131,10 +1148,12 @@ class MasterDashboard:
         pygame.draw.rect(self.screen, badge_color, b_rect, border_radius=4)
         self.screen.blit(b_surf, (rect.left + 23, y + 3))
 
-        pass_surf = self.font_tag.render("PASS [V]", True, (255, 255, 255))
+        status_text = "PASS [V]" if is_pass else "FAIL [X]"
+        status_bg = (39, 174, 96) if is_pass else (231, 76, 60)
+        pass_surf = self.font_tag.render(status_text, True, (255, 255, 255))
         p_rect = pygame.Rect(rect.right - 80, y, 66, 20)
-        pygame.draw.rect(self.screen, (39, 174, 96), p_rect, border_radius=4)
-        self.screen.blit(pass_surf, (rect.right - 74, y + 3))
+        pygame.draw.rect(self.screen, status_bg, p_rect, border_radius=4)
+        self.screen.blit(pass_surf, pass_surf.get_rect(center=p_rect.center))
         y += 30
 
         t_surf = self.font_card_title.render(title, True, (255, 255, 255))

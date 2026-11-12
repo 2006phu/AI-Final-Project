@@ -22,7 +22,7 @@ Do an trien khai day du 3 nhom ky thuat nen tang cua Tri tue Nhan tao tren 3 bai
 
 1. **Task 1 - Bai toan N-Queens (Propositional Logic SAT & Heuristic Local Search):**
    - Mo hinh hoa bai toan $N$-Queens duoi dang menh de logic CNF (`Pairwise` $O(N^3)$ va `Sequential Counter` $O(N^2)$) giai bang bo giai SAT `Glucose3` (`python-sat`).
-   - Thiet ke va cai dat thuat toan tim kiem cuc bo **Heuristic Min-Conflicts** (ket hop Khoi tao tham lam `Greedy Init`, uu tien chon quan hau xung dot cuc dai va hang doi `Tabu Search` ngan chu trinh lap), giup tang toc do hoi tu gap **22.5 lan** tai $N=1000$ so voi Min-Conflicts tieu chuan.
+   - Thiet ke va cai dat thuat toan tim kiem cuc bo **Heuristic Min-Conflicts** (ket hop Khoi tao tham lam `Greedy Init`, uu tien chon quan hau xung dot cuc dai va hang doi `Tabu Search` ngan chu trinh lap), giup giam so buoc lap logic (search steps) toi **22.6 lan** tai $N=1000$ (31.6 so voi 713.6 buoc lap) va rut ngan thoi gian thuc thi so voi Min-Conflicts tieu chuan.
 
 2. **Task 2 - Tro choi Chien dau Xe tang Battle Tank (Zero-Sum Game & Adversarial Search):**
    - Mo hinh hoa tro choi doi khang 2 nguoi choi tren luoi toan hoc Zero-Sum Game voi day du co che vat ly: dan bay 3 o/chu ky kiem tra va cham tung o (cell-by-cell), hai vien dan doi dau triet tieu nhau, tuong gach 3 HP, tuong thep bat tu (`#`) va dia hinh rung cay (`T`) an nap nguy trang.
@@ -63,14 +63,14 @@ source/
 │   ├── gui.py                   # Giao dien dau truong xe tang Pygame + nap dong Custom Agent
 │   ├── main.py                  # CLI mo phong headless hoac khoi chay GUI Task 2
 │   ├── experiments.ipynb        # Jupyter Notebook thuc nghiem va giai dau vong tron Task 2
-│   └── tests/                   # Unit Tests kiem dinh Task 2 (10 tests)
+│   └── tests/                   # Unit Tests kiem dinh Task 2 (12 tests)
 │
 └── task3_kakuro/                # [TASK 3] Kakuro CSP: Backtracking, FC, MAC (GAC) & Heuristics
     ├── puzzle.py                # Bo phan tich cu phap ma tran Kakuro (.txt) va kiem tra Clue Integrity
     ├── csp.py                   # Mo hinh CSP, CombinationTable va tien xu ly thu hep mien
     ├── propagation.py           # Lan truyen rang buoc FC, GAC (Bipartite Matching) va MAC
     ├── solver.py                # BacktrackingSolver ho tro MRV, Degree, LCV va Stepwise Generator
-    ├── puzzles/                 # Cac de Kakuro chuan (.txt): example_3x3, example_5x5, complex_9x9, medium_7x7
+    ├── puzzles/                 # Cac de Kakuro chuan (.txt): simple_3x3.txt, example_5x5.txt, complex_9x9.txt
     ├── gui.py                   # Giao dien giai Kakuro tung buoc (Step-by-step Animation) bang Pygame
     ├── main.py                  # CLI giai Kakuro va doi sanh chien luoc hoac mo GUI Task 3
     ├── experiments.ipynb        # Jupyter Notebook thuc nghiem va bieu do Task 3
@@ -159,8 +159,8 @@ python source/task3_kakuro/main.py --puzzle source/task3_kakuro/puzzles/complex_
 
 ## KIEM THU TU DONG (UNIT TESTS) VA THUC NGHIEM
 
-### 1. Chay bo Unit Tests (36/36 tests)
-He thong bao gom **36 unit tests** kiem thu toan dien logic cua ca 3 Task (CNF encoding, SAT solver, Min-Conflicts, Tank physics, 3-cell bullet flight, state hashing, 4 custom agents, Kakuro parser, GAC bipartite matching, FC/MAC restoration):
+### 1. Chay bo Unit Tests (38/38 tests)
+He thong bao gom **38 unit tests** kiem thu toan dien logic cua ca 3 Task (CNF encoding, SAT solver, Min-Conflicts, Tank physics, 3-cell bullet flight, state hashing, 4 custom agents, Kakuro parser, GAC bipartite matching, FC/MAC restoration):
 
 ```bash
 python -m pytest source/ -v

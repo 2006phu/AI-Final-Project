@@ -39,6 +39,37 @@ CONFIG_OPTIONS = [
 ]
 
 
+PUZZLE_BENCHMARKS = {
+    "3x3": {
+        "title": "So sanh Thuat toan (Do tren de 3x3):",
+        "cols": [
+            ("BT+MAC", 4, 10, "4 n", (16, 185, 129)),
+            ("BT+FC", 4, 10, "4 n", (56, 189, 248)),
+            ("Pure+MRV", 8, 10, "8 n", (251, 191, 36)),
+            ("Pure BT", 10, 10, "10 n", (239, 68, 68)),
+        ],
+    },
+    "5x5": {
+        "title": "So sanh Thuat toan (Do tren de 5x5):",
+        "cols": [
+            ("BT+MAC", 12, 50, "12 n", (16, 185, 129)),
+            ("BT+FC", 13, 50, "13 n", (56, 189, 248)),
+            ("Pure+MRV", 74, 100, "74 n", (251, 191, 36)),
+            ("Pure BT", 100, 100, "6.5k", (239, 68, 68)),
+        ],
+    },
+    "9x9": {
+        "title": "So sanh Thuat toan (Do tren de 9x9):",
+        "cols": [
+            ("BT+MAC", 25, 100, "48 n", (16, 185, 129)),
+            ("BT+FC", 45, 100, "116 n", (56, 189, 248)),
+            ("Pure+MRV", 75, 100, "3.9k", (251, 191, 36)),
+            ("Pure BT", 100, 100, ">100k", (239, 68, 68)),
+        ],
+    },
+}
+
+
 class KakuroGUI:
     """Giao dien do hoa Pygame truc quan hoa tung buoc giai Kakuro (CSP).
     
@@ -595,7 +626,17 @@ class KakuroGUI:
         pygame.draw.rect(self.screen, self.COLOR_CARD_BORDER, c4_rect, 1, border_radius=6)
 
         c4_y = c4_rect.top + 8
-        c4_title = self.font_panel_bold.render("So sanh Thuat toan (Do tren de 5x5):", True, (255, 255, 255))
+
+        # Xac dinh thong so so sanh dong theo tung file de (3x3, 5x5, 9x9)
+        cur_puz_path = self.available_puzzles[self.current_puzzle_idx][1].lower()
+        if "3x3" in cur_puz_path or (self.puzzle.rows == 3 and self.puzzle.cols == 3):
+            bench_info = PUZZLE_BENCHMARKS["3x3"]
+        elif "9x9" in cur_puz_path or (self.puzzle.rows == 9 and self.puzzle.cols == 9):
+            bench_info = PUZZLE_BENCHMARKS["9x9"]
+        else:
+            bench_info = PUZZLE_BENCHMARKS["5x5"]
+
+        c4_title = self.font_panel_bold.render(bench_info["title"], True, (255, 255, 255))
         self.screen.blit(c4_title, (px + 12, c4_y))
 
         # Vertical column chart box
@@ -606,13 +647,8 @@ class KakuroGUI:
         base_y = chart_box.bottom - 16
         pygame.draw.line(self.screen, (55, 65, 85), (chart_box.left + 8, base_y), (chart_box.right - 8, base_y), 1)
 
-        # Cac cot so sanh: MAC (12n, 0bt), FC (13n, 1bt), Pure BT (6468n, 712bt)
-        col_data = [
-            ("BT+MAC", 12, 50, "12 n", (16, 185, 129)),
-            ("BT+FC", 13, 50, "13 n", (56, 189, 248)),
-            ("Pure+MRV", 74, 100, "74 n", (251, 191, 36)),
-            ("Pure BT", 100, 100, "6.5k", (239, 68, 68)),
-        ]
+        # Cac cot so sanh thuat toan duoc lay dong tu bo chi so bench_info
+        col_data = bench_info["cols"]
         num_c = len(col_data)
         c_w = 34
         c_gap = (chart_box.width - 16 - num_c * c_w) / (num_c + 1)

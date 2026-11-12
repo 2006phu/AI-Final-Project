@@ -75,10 +75,29 @@ def build_submission_zips():
         raise FileNotFoundError(f"Khong tim thay tap tin demo.txt: {demo_file}")
 
     if not os.path.exists(report_file):
-        print("[CANH BAO] report.pdf chua ton tai, dang tao file placeholder...")
-        # Tao file placeholder report.pdf
-        with open(report_file, "wb") as f:
-            f.write(b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n180\n%%EOF\n")
+        raise FileNotFoundError(
+            f"[LOI NGHIEP TRONG] Khong tim thay tap tin bao cao: {report_file}!\n"
+            "Yeu cau dat file bao cao nghiem tuc report.pdf vao thu muc goc truoc khi dong goi."
+        )
+
+    # Kiem tra tinh hop le cua report.pdf (khong phai file rong hoac placeholder)
+    report_size_kb = os.path.getsize(report_file) / 1024.0
+    if report_size_kb < 10.0:
+        raise ValueError(
+            f"[LOI] File report.pdf qua nho ({report_size_kb:.2f} KB), co the la file rong hoac placeholder gia!\n"
+            "Vui long kiem tra lai bao cao PDF thuc te truoc khi nop."
+        )
+
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(report_file)
+        page_count = len(reader.pages)
+        if page_count > 5:
+            print(f"[CANH BAO] report.pdf co {page_count} trang, vuot qua gioi han 5 trang cua IEEE!")
+        else:
+            print(f"[XAC THUC] report.pdf hop le: {page_count} trang ({report_size_kb:.1f} KB), dap ung gioi han <= 5 trang.")
+    except Exception as e:
+        print(f"[THONG BAO] Khong the doc chi tiet trang PDF bang pypdf ({e}), tiep tuc kiem tra kich thuoc hop le.")
 
     # Thu thap danh sach tap tin trong source/
     source_files: list[tuple[str, str]] = []  # (abs_path, arcname_inside_source)
@@ -142,6 +161,7 @@ def build_submission_zips():
             assert f"{prefix}/demo.txt" in names
             assert f"{prefix}/source/README.md" in names
             assert f"{prefix}/source/requirements.txt" in names
+            assert f"{prefix}/source/requirement.txt" in names
             assert f"{prefix}/source/main.py" in names
             print(f"  [PASS] {os.path.basename(z_path)}: {len(names)} tap tin ben trong, toan ven 100%.")
 

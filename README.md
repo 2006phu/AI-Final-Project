@@ -70,7 +70,7 @@ source/
     ├── csp.py                   # Mo hinh CSP, CombinationTable va tien xu ly thu hep mien
     ├── propagation.py           # Lan truyen rang buoc FC, GAC (Bipartite Matching) va MAC
     ├── solver.py                # BacktrackingSolver ho tro MRV, Degree, LCV va Stepwise Generator
-    ├── puzzles/                 # Cac de Kakuro chuan (.txt): example_3x3, example_5x5, complex_9x9, medium_7x7
+    ├── puzzles/                 # Cac de Kakuro chuan (.txt): simple_3x3.txt, example_5x5.txt, complex_9x9.txt
     ├── gui.py                   # Giao dien giai Kakuro tung buoc (Step-by-step Animation) bang Pygame
     ├── main.py                  # CLI giai Kakuro va doi sanh chien luoc hoac mo GUI Task 3
     ├── experiments.ipynb        # Jupyter Notebook thuc nghiem va bieu do Task 3
