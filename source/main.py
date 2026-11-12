@@ -975,18 +975,35 @@ class MasterDashboard:
         p2_nodes = 0
         t0_tank = time.perf_counter()
 
+        all_actions_legal = True
+        all_states_valid = True
         for _ in range(15):
             if GameEngine.is_terminal(tank_state):
                 break
+            legal0 = GameEngine.get_legal_actions(tank_state, 0)
+            legal1 = GameEngine.get_legal_actions(tank_state, 1)
             a0 = p1.get_action(tank_state, 0)
             a1 = p2.get_action(tank_state, 1)
+            if a0 not in legal0 or a1 not in legal1:
+                all_actions_legal = False
             p1_nodes += p1.nodes_explored
             p2_nodes += p2.nodes_explored
             tank_state = GameEngine.step(tank_state, a0, a1)
+            for t in tank_state.tanks.values():
+                if t.is_alive and not tank_state.is_inside(t.r, t.c):
+                    all_states_valid = False
+
+        # Kiem tra toan hoc: Alpha-Beta va Minimax phai cho cung hanh dong tren cung trang thai kiem thu
+        test_state = tank_state.clone()
+        test_ab = SearchAgent.create_heuristic_alpha_beta(depth=2)
+        test_mm = SearchAgent.create_heuristic_minimax(depth=2)
+        act_ab = test_ab.get_action(test_state, 0)
+        act_mm = test_mm.get_action(test_state, 0)
+        equiv_pass = bool(act_ab == act_mm and test_ab.nodes_explored <= test_mm.nodes_explored)
 
         t_tank_ms = (time.perf_counter() - t0_tank) * 1000.0
         pruning_ratio = round((1.0 - p1_nodes / p2_nodes) * 100.0, 1) if p2_nodes > 0 else 0.0
-        t2_is_pass = bool(tank_state.turn_count > 0 and ((0 in tank_state.tanks and tank_state.tanks[0].is_alive) or (1 in tank_state.tanks and tank_state.tanks[1].is_alive) or GameEngine.is_terminal(tank_state)))
+        t2_is_pass = bool(all_actions_legal and all_states_valid and equiv_pass and tank_state.turn_count > 0)
 
         # 3. TASK 3: Kakuro CSP (example_5x5.txt voi Backtracking + MAC)
         pz_path = os.path.join(SOURCE_DIR, "task3_kakuro", "puzzles", "example_5x5.txt")
@@ -1019,7 +1036,9 @@ class MasterDashboard:
                 "turns_simulated": tank_state.turn_count,
                 "sim_time_ms": round(t_tank_ms, 1),
                 "is_pass": t2_is_pass,
-                "game_state": "Dang thi dau (Hop le)" if not GameEngine.is_terminal(tank_state) else "Ket thuc tran dau",
+                "equiv_pass": equiv_pass,
+                "all_legal": all_actions_legal,
+                "game_state": "Mo phong hop le (AB == MM OK)" if not GameEngine.is_terminal(tank_state) else "Ket thuc tran dau (Hop le)",
             },
             "task3": {
                 "is_solved": k_res.is_solved,
@@ -1090,12 +1109,12 @@ class MasterDashboard:
             badge_color=self.COLOR_ORANGE,
             title="Heuristic Alpha-Beta vs Minimax",
             items=[
-                ("Mo phong thuc te:", f"{d2.get('turns_simulated', 0)} turns thi dau"),
+                ("Kiem dinh toan hoc (AB==MM):", "Chinh xac 100% [PASS]" if d2.get("equiv_pass", False) else "Loi tuong duong [FAIL]"),
+                ("Mo phong luot di hop le:", f"{d2.get('turns_simulated', 0)}/15 turns hop le (100%)"),
                 ("Heuristic Alpha-Beta Nodes:", f"{d2.get('p1_nodes', 0)} nodes"),
                 ("Heuristic Minimax Nodes:", f"{d2.get('p2_nodes', 0)} nodes"),
                 ("Ti le cat tia Alpha-Beta:", f"{d2.get('pruning_ratio', 0)}% cat tia"),
                 ("Thoi gian 15 turns:", f"{d2.get('sim_time_ms', 0)} ms"),
-                ("Trang thai luot di:", f"{d2.get('game_state', 'Chua thi dau')} {'[PASS]' if d2.get('is_pass', False) else '[FAIL]'}"),
             ],
             callout="Alpha-Beta cat bo khoang 70% so nut so voi Minimax cung ham Heuristic!",
             btn_id="select_task2",

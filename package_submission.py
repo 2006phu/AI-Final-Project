@@ -93,11 +93,15 @@ def build_submission_zips():
         reader = pypdf.PdfReader(report_file)
         page_count = len(reader.pages)
         if page_count > 5:
-            print(f"[CANH BAO] report.pdf co {page_count} trang, vuot qua gioi han 5 trang cua IEEE!")
-        else:
-            print(f"[XAC THUC] report.pdf hop le: {page_count} trang ({report_size_kb:.1f} KB), dap ung gioi han <= 5 trang.")
+            raise ValueError(f"[LOI] report.pdf co {page_count} trang, vuot qua gioi han 5 trang cua IEEE!")
+        if page_count == 0:
+            raise ValueError("[LOI] report.pdf khong co noi dung (0 trang)!")
+        print(f"[XAC THUC] report.pdf hop le: {page_count} trang ({report_size_kb:.1f} KB), dap ung gioi han <= 5 trang.")
     except Exception as e:
-        print(f"[THONG BAO] Khong the doc chi tiet trang PDF bang pypdf ({e}), tiep tuc kiem tra kich thuoc hop le.")
+        raise RuntimeError(
+            f"[LOI NGHIEP TRONG] Khong the doc va xac thuc trang PDF bang pypdf: {e}\n"
+            "Dung dong goi de bao dam khong nop nham file bao cao khong hop le."
+        )
 
     # Thu thap danh sach tap tin trong source/
     source_files: list[tuple[str, str]] = []  # (abs_path, arcname_inside_source)

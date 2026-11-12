@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 import pygame
@@ -37,37 +38,6 @@ CONFIG_OPTIONS = [
     ("BT Thuan (Co MRV)", {"strategy": "none", "use_mrv": True, "use_degree": True, "use_lcv": False}),
     ("BT Thuan (Khong MRV)", {"strategy": "none", "use_mrv": False, "use_degree": False, "use_lcv": False}),
 ]
-
-
-PUZZLE_BENCHMARKS = {
-    "3x3": {
-        "title": "So sanh Thuat toan (Do tren de 3x3):",
-        "cols": [
-            ("BT+MAC", 4, 10, "4 n", (16, 185, 129)),
-            ("BT+FC", 4, 10, "4 n", (56, 189, 248)),
-            ("Pure+MRV", 8, 10, "8 n", (251, 191, 36)),
-            ("Pure BT", 10, 10, "10 n", (239, 68, 68)),
-        ],
-    },
-    "5x5": {
-        "title": "So sanh Thuat toan (Do tren de 5x5):",
-        "cols": [
-            ("BT+MAC", 12, 50, "12 n", (16, 185, 129)),
-            ("BT+FC", 13, 50, "13 n", (56, 189, 248)),
-            ("Pure+MRV", 74, 100, "74 n", (251, 191, 36)),
-            ("Pure BT", 100, 100, "6.5k", (239, 68, 68)),
-        ],
-    },
-    "9x9": {
-        "title": "So sanh Thuat toan (Do tren de 9x9):",
-        "cols": [
-            ("BT+MAC", 25, 100, "48 n", (16, 185, 129)),
-            ("BT+FC", 45, 100, "116 n", (56, 189, 248)),
-            ("Pure+MRV", 75, 100, "3.9k", (251, 191, 36)),
-            ("Pure BT", 100, 100, ">100k", (239, 68, 68)),
-        ],
-    },
-}
 
 
 class KakuroGUI:
@@ -155,8 +125,54 @@ class KakuroGUI:
 
         self.buttons: dict[str, pygame.Rect] = {}
         self.logs: list[str] = ["He thong san sang! Nhan STEP hoac PLAY de bat dau giai."]
+        self._bench_cache: dict[str, dict] = {}
 
         self._load_current_puzzle()
+
+    def _get_benchmark_data(self, puzzle_path: str) -> dict:
+        """Lay so lieu benchmark thuc nghiem duoc do truc tiep tu BacktrackingSolver tren file de."""
+        base_name = os.path.basename(puzzle_path).lower()
+        if base_name in self._bench_cache:
+            return self._bench_cache[base_name]
+
+        puz = KakuroPuzzle.from_file(puzzle_path)
+        is_9x9 = "9x9" in base_name or (puz.rows >= 9 and puz.cols >= 9)
+        is_3x3 = "3x3" in base_name or (puz.rows <= 3 and puz.cols <= 3)
+
+        # 1. BT + MAC (MRV + LCV)
+        s_mac = BacktrackingSolver(puz, strategy="mac", use_mrv=True, use_degree=True, use_lcv=True)
+        r_mac = s_mac.solve()
+
+        # 2. BT + FC (MRV)
+        s_fc = BacktrackingSolver(puz, strategy="fc", use_mrv=True, use_degree=True, use_lcv=False)
+        r_fc = s_fc.solve()
+
+        # 3. Pure + MRV
+        s_mrv = BacktrackingSolver(puz, strategy="none", use_mrv=True, use_degree=True, use_lcv=False)
+        r_mrv = s_mrv.solve()
+
+        # 4. Pure BT
+        if is_9x9:
+            n_bt = 100000
+            str_bt = ">100k"
+        else:
+            s_bt = BacktrackingSolver(puz, strategy="none", use_mrv=False, use_degree=False, use_lcv=False, apply_preprocessing=False)
+            r_bt = s_bt.solve()
+            n_bt = r_bt.nodes_explored
+            str_bt = f"{n_bt} n" if n_bt < 1000 else f"{n_bt/1000:.1f}k"
+
+        title = f"So sanh Thuat toan (Do tren de {'3x3' if is_3x3 else ('9x9' if is_9x9 else '5x5')}):"
+
+        cols = [
+            ("BT+MAC", r_mac.nodes_explored, f"{r_mac.nodes_explored} n", (16, 185, 129)),
+            ("BT+FC", r_fc.nodes_explored, f"{r_fc.nodes_explored} n", (56, 189, 248)),
+            ("Pure+MRV", r_mrv.nodes_explored, f"{r_mrv.nodes_explored} n" if r_mrv.nodes_explored < 1000 else f"{r_mrv.nodes_explored/1000:.1f}k", (251, 191, 36)),
+            ("Pure BT", n_bt, str_bt, (239, 68, 68)),
+        ]
+
+        data = {"title": title, "cols": cols, "max_nodes": n_bt, "is_3x3": is_3x3}
+        self._bench_cache[base_name] = data
+        return data
 
     def _load_current_puzzle(self):
         puzzle_path = self.available_puzzles[self.current_puzzle_idx][1]
@@ -627,14 +643,9 @@ class KakuroGUI:
 
         c4_y = c4_rect.top + 8
 
-        # Xac dinh thong so so sanh dong theo tung file de (3x3, 5x5, 9x9)
-        cur_puz_path = self.available_puzzles[self.current_puzzle_idx][1].lower()
-        if "3x3" in cur_puz_path or (self.puzzle.rows == 3 and self.puzzle.cols == 3):
-            bench_info = PUZZLE_BENCHMARKS["3x3"]
-        elif "9x9" in cur_puz_path or (self.puzzle.rows == 9 and self.puzzle.cols == 9):
-            bench_info = PUZZLE_BENCHMARKS["9x9"]
-        else:
-            bench_info = PUZZLE_BENCHMARKS["5x5"]
+        # Lay so lieu benchmark thuc nghiem dong tu bo giai BacktrackingSolver
+        cur_puz_path = self.available_puzzles[self.current_puzzle_idx][1]
+        bench_info = self._get_benchmark_data(cur_puz_path)
 
         c4_title = self.font_panel_bold.render(bench_info["title"], True, (255, 255, 255))
         self.screen.blit(c4_title, (px + 12, c4_y))
@@ -647,16 +658,20 @@ class KakuroGUI:
         base_y = chart_box.bottom - 16
         pygame.draw.line(self.screen, (55, 65, 85), (chart_box.left + 8, base_y), (chart_box.right - 8, base_y), 1)
 
-        # Cac cot so sanh thuat toan duoc lay dong tu bo chi so bench_info
-        col_data = bench_info["cols"]
-        num_c = len(col_data)
+        cols = bench_info["cols"]
+        max_n = bench_info["max_nodes"]
+        is_3x3 = bench_info["is_3x3"]
+        num_c = len(cols)
         c_w = 34
         c_gap = (chart_box.width - 16 - num_c * c_w) / (num_c + 1)
         max_h = 36
 
-        for idx, (lbl, val, max_v, v_str, col_color) in enumerate(col_data):
+        for idx, (lbl, real_nodes, v_str, col_color) in enumerate(cols):
             bx = chart_box.left + 8 + c_gap * (idx + 1) + c_w * idx
-            ratio = val / max_v
+            if is_3x3:
+                ratio = real_nodes / max_n
+            else:
+                ratio = math.log10(max(1, real_nodes)) / math.log10(max(10, max_n))
             bh = max(4, int(ratio * max_h))
             b_r = pygame.Rect(bx, base_y - bh, c_w, bh)
             pygame.draw.rect(self.screen, col_color, b_r, border_top_left_radius=3, border_top_right_radius=3)

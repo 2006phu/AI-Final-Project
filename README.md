@@ -22,15 +22,15 @@ Do an trien khai day du 3 nhom ky thuat nen tang cua Tri tue Nhan tao tren 3 bai
 
 1. **Task 1 - Bai toan N-Queens (Propositional Logic SAT & Heuristic Local Search):**
    - Mo hinh hoa bai toan $N$-Queens duoi dang menh de logic CNF (`Pairwise` $O(N^3)$ va `Sequential Counter` $O(N^2)$) giai bang bo giai SAT `Glucose3` (`python-sat`).
-   - Thiet ke va cai dat thuat toan tim kiem cuc bo **Heuristic Min-Conflicts** (ket hop Khoi tao tham lam `Greedy Init`, uu tien chon quan hau xung dot cuc dai va hang doi `Tabu Search` ngan chu trinh lap), giup giam so buoc lap logic (search steps) toi **22.6 lan** tai $N=1000$ (31.6 so voi 713.6 buoc lap) va rut ngan thoi gian thuc thi so voi Min-Conflicts tieu chuan.
+   - Thiet ke va cai dat thuat toan tim kiem cuc bo **Heuristic Min-Conflicts** (ket hop Khoi tao tham lam `Greedy Init`, uu tien chon quan hau xung dot cuc dai va hang doi `Tabu Search` ngan chu trinh lap), giup giam so buoc lap logic (search steps) toi **22.6 lan** tai $N=1000$ (31.6 so voi 713.6 buoc lap) va rut ngan thoi gian thuc thi tu 483.10 ms xuong 278.95 ms so voi Min-Conflicts tieu chuan.
 
 2. **Task 2 - Tro choi Chien dau Xe tang Battle Tank (Zero-Sum Game & Adversarial Search):**
    - Mo hinh hoa tro choi doi khang 2 nguoi choi tren luoi toan hoc Zero-Sum Game voi day du co che vat ly: dan bay 3 o/chu ky kiem tra va cham tung o (cell-by-cell), hai vien dan doi dau triet tieu nhau, tuong gach 3 HP, tuong thep bat tu (`#`) va dia hinh rung cay (`T`) an nap nguy trang.
-   - Cai dat va doi sanh 4 cau hinh tim kiem doi khang: **Minimax**, **Alpha-Beta Pruning**, **Heuristic Minimax**, va **Heuristic Alpha-Beta** (ung dung `BFS Pathfinding`, `Move Ordering`, `Transposition Table`, va co che chong be tac `Anti-Stalemate Flanking` tren cac ban do chien thuat da dang).
+   - Cai dat va doi sanh 4 cau hinh tim kiem doi khang: **Minimax**, **Alpha-Beta Pruning**, **Heuristic Minimax**, va **Heuristic Alpha-Beta** (ung dung `BFS Pathfinding`, `Move Ordering`, `Transposition Table`, ket hop chien luoc heuristic boc suon ho tro chu dong tranh be tac `Anti-Stalemate Flanking Heuristic` tren cac ban do chien thuat da dang).
 
 3. **Task 3 - Tro choi Kakuro (Constraint Satisfaction Problem & Constraint Propagation):**
    - Mo hinh hoa Kakuro duoi dang bai toan CSP voi bang phan tich to hop (`CombinationTable`) tien xu ly mien gia tri ban dau.
-   - Trien khai day du cac chien luoc tim kiem quay lui: **Pure Backtracking (BT)**, **Forward Checking (BT + FC)**, va **Maintaining Arc Consistency (BT + MAC)** su dung cap ghep cuc dai tren do thi hai phia (**Bipartite Matching**) de duy tri **Generalized Arc Consistency (GAC)** tren rang buoc toan cuc `AllDifferent + Sum`, ket hop voi bo 3 heuristics **MRV + Degree + LCV**.
+   - Phan dinh ro rang giua **GAC (Generalized Arc Consistency)** la muc do nhat quan cung tong quat cua mang rang buoc (thong qua thuat toan so ghep cuc dai do thi hai phia Bipartite Matching tren rang buoc toan cuc AllDifferent + Sum), va **MAC (Maintaining Arc Consistency)** la giai thuat tim kiem quay lui duy tri muc do nhat quan GAC sau moi buoc gan bien, ket hop voi bo 3 heuristics dinh huong **MRV + Degree + LCV**.
 
 ---
 

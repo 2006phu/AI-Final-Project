@@ -77,6 +77,49 @@ def test_search_agent_equivalence():
     assert act_hmm == act_hab
     assert hab.nodes_explored <= hmm.nodes_explored
 
+    # 3. Kiem thu chuyen biet Transposition Table (TT Enabled vs TT Disabled):
+    # Phai tra ve cung hanh dong toi uu tuyet doi tren cac map khac nhau
+    for test_map in ["arena_11x11.txt", "classic_forest_13x13.txt"]:
+        s_test = GameState.from_file(os.path.join(os.path.dirname(__file__), "..", "maps", test_map))
+        ab_tt_on = SearchAgent(depth=2, use_alpha_beta=True, use_heuristic=True, use_transposition=True)
+        ab_tt_off = SearchAgent(depth=2, use_alpha_beta=True, use_heuristic=True, use_transposition=False)
+        act_on = ab_tt_on.get_action(s_test, player_id=0)
+        act_off = ab_tt_off.get_action(s_test, player_id=0)
+        assert act_on == act_off, f"TT on vs off phai cho cung hanh dong tren {test_map}!"
+        assert ab_tt_on.nodes_explored <= ab_tt_off.nodes_explored
+
+    # 4. Kiem tra tinh toan ven cua Transposition Table Bounds va Flags tai depth >= 4:
+    ab_probe = SearchAgent(depth=4, use_alpha_beta=True, use_heuristic=True, use_transposition=True)
+    ab_probe.get_action(state, player_id=0)
+    assert len(ab_probe.transposition_table) > 0, "Transposition Table phai luu cache cac trang thai da duyet tai d=4!"
+    from task2_tank.agents.search_agent import TTFlag
+    found_flags = set()
+    for key, (score, d, flag) in ab_probe.transposition_table.items():
+        assert isinstance(flag, TTFlag)
+        assert d >= 0
+        assert isinstance(score, (int, float))
+        found_flags.add(flag)
+    assert len(found_flags) > 0, "Transposition table phai phan loai TTFlag hop le!"
+
+    # 5. Kiem tra State Key Sensitivity: Khac biet HP, Tuong, Dan phai cho state_key khac nhau
+    s1 = state.clone()
+    key1 = s1.state_key()
+
+    # Thay doi HP xe
+    s2 = s1.clone()
+    s2.tanks[0].hp -= 1
+    assert s2.state_key() != key1, "State key phai phan biet khi HP xe thay doi!"
+
+    # Thay doi HP can cu
+    s3 = s1.clone()
+    s3.bases[0].hp -= 1
+    assert s3.state_key() != key1, "State key phai phan biet khi HP can cu thay doi!"
+
+    # Co them vien dan dang bay
+    s4 = s1.clone()
+    s4.bullets.append(Bullet(owner_id=0, r=5, c=5, direction=Direction.UP))
+    assert s4.state_key() != key1, "State key phai phan biet khi co dan bay!"
+
 
 def test_dynamic_agent_discovery():
     agents_dir = os.path.join(os.path.dirname(__file__), "..", "agents")
