@@ -1,5 +1,5 @@
 import os
-import shutil
+import re
 import zipfile
 
 # Thong tin Do an Cuoi ky - Nhom 08 - TDTU
@@ -61,6 +61,33 @@ def should_exclude(rel_path: str) -> bool:
     return False
 
 
+def _count_pdf_pages(pdf_path: str) -> int:
+    """Dem so trang cua file PDF; uu tien pypdf neu co va fallback doc cau truc PDF chuan."""
+    with open(pdf_path, "rb") as f:
+        data = f.read()
+
+    if not data.startswith(b"%PDF-"):
+        raise ValueError("Tap tin khong dung dinh dang PDF chuan (%PDF-).")
+
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(pdf_path)
+        return len(reader.pages)
+    except ImportError:
+        pass
+
+    # Fallback thuan Python khi moi truong chua cai pypdf
+    page_objs = len(re.findall(rb"/Type\s*/Page\b(?!s)", data))
+    if page_objs > 0:
+        return page_objs
+
+    count_matches = re.findall(rb"/Count\s+(\d+)", data)
+    if count_matches:
+        return max(int(c) for c in count_matches)
+
+    raise RuntimeError("Khong the xac dinh so trang PDF tu tap tin bao cao.")
+
+
 def build_submission_zips():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     source_dir = os.path.join(base_dir, "source")
@@ -88,20 +115,12 @@ def build_submission_zips():
             "Vui long kiem tra lai bao cao PDF thuc te truoc khi nop."
         )
 
-    try:
-        import pypdf
-        reader = pypdf.PdfReader(report_file)
-        page_count = len(reader.pages)
-        if page_count > 5:
-            raise ValueError(f"[LOI] report.pdf co {page_count} trang, vuot qua gioi han 5 trang cua IEEE!")
-        if page_count == 0:
-            raise ValueError("[LOI] report.pdf khong co noi dung (0 trang)!")
-        print(f"[XAC THUC] report.pdf hop le: {page_count} trang ({report_size_kb:.1f} KB), dap ung gioi han <= 5 trang.")
-    except Exception as e:
-        raise RuntimeError(
-            f"[LOI NGHIEP TRONG] Khong the doc va xac thuc trang PDF bang pypdf: {e}\n"
-            "Dung dong goi de bao dam khong nop nham file bao cao khong hop le."
-        )
+    page_count = _count_pdf_pages(report_file)
+    if page_count > 5:
+        raise ValueError(f"[LOI] report.pdf co {page_count} trang, vuot qua gioi han 5 trang cua IEEE!")
+    if page_count == 0:
+        raise ValueError("[LOI] report.pdf khong co noi dung (0 trang)!")
+    print(f"[XAC THUC] report.pdf hop le: {page_count} trang ({report_size_kb:.1f} KB), dap ung gioi han <= 5 trang.")
 
     # Thu thap danh sach tap tin trong source/
     source_files: list[tuple[str, str]] = []  # (abs_path, arcname_inside_source)

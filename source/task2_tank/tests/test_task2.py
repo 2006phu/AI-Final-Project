@@ -77,15 +77,16 @@ def test_search_agent_equivalence():
     assert act_hmm == act_hab
     assert hab.nodes_explored <= hmm.nodes_explored
 
-    # 3. Kiem thu chuyen biet Transposition Table (TT Enabled vs TT Disabled):
-    # Phai tra ve cung hanh dong toi uu tuyet doi tren cac map khac nhau
-    for test_map in ["arena_11x11.txt", "classic_forest_13x13.txt"]:
+    # 3. Kiem thu chuyen biet Transposition Table (TT Enabled vs TT Disabled) tai depth=4:
+    # Tai depth=4, _search moi thuc su doc/ghi Transposition Table (depth=2 chi dung tai goc)
+    for test_map in ["arena_11x11.txt", "classic_forest_13x13.txt", "tactical_clash_13x13.txt"]:
         s_test = GameState.from_file(os.path.join(os.path.dirname(__file__), "..", "maps", test_map))
-        ab_tt_on = SearchAgent(depth=2, use_alpha_beta=True, use_heuristic=True, use_transposition=True)
-        ab_tt_off = SearchAgent(depth=2, use_alpha_beta=True, use_heuristic=True, use_transposition=False)
+        ab_tt_on = SearchAgent(depth=4, use_alpha_beta=True, use_heuristic=True, use_transposition=True)
+        ab_tt_off = SearchAgent(depth=4, use_alpha_beta=True, use_heuristic=True, use_transposition=False)
         act_on = ab_tt_on.get_action(s_test, player_id=0)
         act_off = ab_tt_off.get_action(s_test, player_id=0)
         assert act_on == act_off, f"TT on vs off phai cho cung hanh dong tren {test_map}!"
+        assert len(ab_tt_on.transposition_table) > 0, f"TT phai duoc su dung tai d=4 tren {test_map}!"
         assert ab_tt_on.nodes_explored <= ab_tt_off.nodes_explored
 
     # 4. Kiem tra tinh toan ven cua Transposition Table Bounds va Flags tai depth >= 4:

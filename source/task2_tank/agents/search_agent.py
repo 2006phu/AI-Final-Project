@@ -239,7 +239,6 @@ class SearchAgent(BaseAgent):
         """
         self.nodes_explored += 1
         alpha_orig = alpha
-        beta_orig = beta
 
         # 1. Kiem tra trang thai ket thuc (Terminal)
         if GameEngine.is_terminal(state):
@@ -335,7 +334,7 @@ class SearchAgent(BaseAgent):
         if self.use_transposition and table_key:
             if max_val <= alpha_orig:
                 flag = TTFlag.UPPERBOUND
-            elif max_val >= beta_orig:
+            elif max_val >= beta:
                 flag = TTFlag.LOWERBOUND
             else:
                 flag = TTFlag.EXACT

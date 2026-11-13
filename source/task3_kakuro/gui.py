@@ -151,8 +151,8 @@ class KakuroGUI:
         s_mrv = BacktrackingSolver(puz, strategy="none", use_mrv=True, use_degree=True, use_lcv=False)
         r_mrv = s_mrv.solve()
 
-        # 4. Pure BT
-        if is_9x9:
+        # 4. Pure BT (bo qua de tranh treo UI tren ma tran lon >= 7x7)
+        if is_9x9 or max(puz.rows, puz.cols) >= 7:
             n_bt = 100000
             str_bt = ">100k"
         else:
@@ -669,7 +669,7 @@ class KakuroGUI:
         for idx, (lbl, real_nodes, v_str, col_color) in enumerate(cols):
             bx = chart_box.left + 8 + c_gap * (idx + 1) + c_w * idx
             if is_3x3:
-                ratio = real_nodes / max_n
+                ratio = real_nodes / max(1, max_n)
             else:
                 ratio = math.log10(max(1, real_nodes)) / math.log10(max(10, max_n))
             bh = max(4, int(ratio * max_h))
